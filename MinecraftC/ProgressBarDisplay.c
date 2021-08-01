@@ -53,7 +53,7 @@ void ProgressBarDisplaySetProgress(ProgressBarDisplay display, int progress)
 		int a1 = display->Minecraft->Width * 240 / display->Minecraft->Height;
 		int a2 = display->Minecraft->Height * 240 / display->Minecraft->Height;
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(display->Minecraft->TextureManager, "Dirt.png"));
+		glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(display->Minecraft->TextureManager, "Dirt.png"));
 		ShapeRendererBegin();
 		ShapeRendererColor(ColorToFloat4(ColorFromHex(0x404040ff)).rgb);
 		ShapeRendererVertexUV((float3){ 0.0, a2, 0.0 }, (float2){ 0.0, a2 / 32.0 });

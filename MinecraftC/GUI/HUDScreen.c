@@ -26,12 +26,12 @@ void HUDScreenRender(HUDScreen hud, float var1, bool var2, int2 mousePos)
 {
 	PlayerData player = hud->Minecraft->Player->TypeData;
 	RendererEnableGUIMode(hud->Minecraft->Renderer);
-	//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(hud->Minecraft->TextureManager, "GUI/GUI.png"));
+	glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(hud->Minecraft->TextureManager, "GUI/GUI.png"));
 	glColor4f(1.0, 1.0, 1.0, 1.0);
 	glEnable(GL_BLEND);
 	ScreenDrawImage((int2){ hud->Width / 2 - 91, hud->Height - 22 }, (int2){ 0, 0 }, (int2){ 182, 22 }, -90.0);
 	ScreenDrawImage((int2){ hud->Width / 2 - 92 + player->Inventory->Selected * 20, hud->Height - 23 }, (int2){ 0, 22 }, (int2){ 24, 22 }, -90.0);
-	//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(hud->Minecraft->TextureManager, "GUI/Icons.png"));
+	glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(hud->Minecraft->TextureManager, "GUI/Icons.png"));
 	ScreenDrawImage((int2){ hud->Width / 2 - 7, hud->Height / 2 - 7 }, (int2){ 0, 0 }, (int2){ 16, 16 }, -90.0);
 	
 	glDisable(GL_BLEND);
@@ -60,7 +60,7 @@ void HUDScreenRender(HUDScreen hud, float var1, bool var2, int2 mousePos)
 			glRotatef(45.0, 0.0, 1.0, 0.0);
 			glTranslatef(-1.5, 0.5, 0.5);
 			glScalef(-1.0, -1.0, -1.0);
-			//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(hud->Minecraft->TextureManager, "Terrain.png"));
+			glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(hud->Minecraft->TextureManager, "Terrain.png"));
 			ShapeRendererBegin();
 			BlockRenderFullBrightness(Blocks.Table[tile]);
 			ShapeRendererEnd();

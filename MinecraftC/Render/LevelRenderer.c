@@ -147,7 +147,7 @@ int LevelRendererSortChunks(LevelRenderer renderer, Player player, int pass)
 	for (int i = 0; i < renderer->ChunkCacheCount; i++) { count = ChunkAppendLists(renderer->LoadQueue[i], renderer->ChunkDataCache, count, pass); }
 	if (count > 0)
 	{
-		//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(renderer->Textures, "Terrain.png"));
+		glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(renderer->Textures, "Terrain.png"));
 		glCallLists(count, GL_INT, renderer->ChunkDataCache);
 	}
 	return count;

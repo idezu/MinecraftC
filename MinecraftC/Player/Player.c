@@ -165,7 +165,7 @@ void PlayerBindTexture(Player player, TextureManager textures)
 	//	PlayerNewTexture = NULL;
 	//}
 	
-	//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(textures, "Char.png"));
+	glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(textures, "Char.png"));
 }
 
 void PlayerDestroy(Player player)

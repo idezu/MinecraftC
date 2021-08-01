@@ -55,7 +55,7 @@ static void Render(FontRenderer font, char * str, int x, int y, Color color, boo
 	if (str != NULL)
 	{
 		if (darken) { color.rgb >>= 2; }
-		//glBindTexture(GL_TEXTURE_2D, font->Texture);
+		glBindTexture(GL_TEXTURE_2D, font->Texture);
 		ShapeRendererBegin();
 		ShapeRendererColor(ColorToFloat4(color).rgb);
 		for (int i = 0, w = 0; i < strlen(str); i++)

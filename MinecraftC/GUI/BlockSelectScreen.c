@@ -37,7 +37,7 @@ void BlockSelectScreenRender(BlockSelectScreen screen, int2 mouse)
 	}
 	ScreenDrawCenteredString(screen->Font, "Select block", (int2){ screen->Width / 2, 40 }, ColorWhite);
 	
-	//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(screen->Minecraft->TextureManager, "Terrain.png"));
+	glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(screen->Minecraft->TextureManager, "Terrain.png"));
 	for (int i = 0; i < ListCount(SessionDataAllowedBlocks); i++)
 	{
 		Block block = SessionDataAllowedBlocks[i];
