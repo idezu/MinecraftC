@@ -175,7 +175,7 @@ static void Tick(Minecraft minecraft, list(SDL_Event) events)
 	hud->Ticks++;
 	for (int i = 0; i < ListCount(hud->Chat); i++) { hud->Chat[i]->Time++; }
 	
-	glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Terrain.png"));
+	//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Terrain.png"));
 	for (int i = 0; i < ListCount(minecraft->TextureManager->Animations); i++)
 	{
 		AnimatedTexture texture = minecraft->TextureManager->Animations[i];
@@ -324,6 +324,10 @@ static void Tick(Minecraft minecraft, list(SDL_Event) events)
 	}
 }
 
+#define SOKOL_IMPL
+#define SOKOL_GLCORE33
+#include <sokol/sokol_gfx.h>
+
 void MinecraftRun(Minecraft minecraft)
 {
 	minecraft->Running = true;
@@ -335,25 +339,22 @@ void MinecraftRun(Minecraft minecraft)
 	SDL_GetWindowSize(minecraft->Window, &minecraft->Width, &minecraft->Height);
 	SDL_GL_GetDrawableSize(minecraft->Window, &minecraft->FrameWidth, &minecraft->FrameHeight);
 	
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	minecraft->Context = SDL_GL_CreateContext(minecraft->Window);
 	if (minecraft->Context == NULL) { LogFatal("Failed to create OpenGL context: %s\n", SDL_GetError()); }
 	
-	CheckGLError(minecraft, "Pre startup");
-	glEnable(GL_TEXTURE_2D);
-	glShadeModel(GL_SMOOTH);
-	glClearDepth(1.0);
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.0);
-	glCullFace(GL_BACK);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	CheckGLError(minecraft, "Startup");
+	sg_setup(&(sg_desc){ 0 });
+	while (minecraft->Running)
+	{
+		SDL_Event event;
+		while (SDL_PollEvent(&event)) { if (event.type == SDL_QUIT) { return; } }
+		sg_begin_default_pass(&(sg_pass_action){ 0 }, minecraft->FrameWidth, minecraft->FrameHeight);
+		sg_end_pass();
+		sg_commit();
+		SDL_GL_SwapWindow(minecraft->Window);
+	}
 	
 	BlocksInitialize();
 	ShapeRendererInitialize();
@@ -366,7 +367,7 @@ void MinecraftRun(Minecraft minecraft)
 	TextureManagerRegisterAnimation(minecraft->TextureManager, WaterTextureCreate());
 	minecraft->Font = FontRendererCreate(minecraft->Settings, "Default.png", minecraft->TextureManager);
 	minecraft->LevelRenderer = LevelRendererCreate(minecraft, minecraft->TextureManager);
-	glViewport(0, 0, minecraft->FrameWidth, minecraft->FrameHeight);
+	sg_apply_viewport(0, 0, minecraft->FrameWidth, minecraft->FrameHeight, true);
 	
 	if (!minecraft->LevelLoaded)
 	{
@@ -644,10 +645,10 @@ void MinecraftRun(Minecraft minecraft)
 					{
 						if (ListCount(particles->Particles[j]) != 0)
 						{
-							int tex = 0;
+							sg_image tex = { 0 };
 							if (j == 0) { tex = TextureManagerLoad(minecraft->TextureManager, "Particles.png"); }
 							if (j == 1) { tex = TextureManagerLoad(minecraft->TextureManager, "Terrain.png"); }
-							glBindTexture(GL_TEXTURE_2D, tex);
+							//glBindTexture(GL_TEXTURE_2D, tex);
 							ShapeRendererBegin();
 							for (int k = 0; k < ListCount(particles->Particles[j]); k++)
 							{
@@ -657,11 +658,11 @@ void MinecraftRun(Minecraft minecraft)
 						}
 					}
 					
-					glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Rock.png"));
+					//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Rock.png"));
 					glEnable(GL_TEXTURE_2D);
 					glCallList(lrenderer->ListID);
 					RendererUpdateFog(renderer);
-					glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Clouds.png"));
+					//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Clouds.png"));
 					glColor4f(1.0, 1.0, 1.0, 1.0);
 					float4 cloud = ColorToFloat4(level->CloudColor);
 					if (minecraft->Settings->Anaglyph)
@@ -722,8 +723,8 @@ void MinecraftRun(Minecraft minecraft)
 						if (lrenderer->Cracks > 0.0)
 						{
 							glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
-							int tex = TextureManagerLoad(minecraft->TextureManager, "Terrain.png");
-							glBindTexture(GL_TEXTURE_2D, tex);
+							sg_image tex = TextureManagerLoad(minecraft->TextureManager, "Terrain.png");
+							//glBindTexture(GL_TEXTURE_2D, tex);
 							glColor4f(1.0, 1.0, 1.0, 0.5);
 							glPushMatrix();
 							Block block = Blocks.Table[LevelGetTile(level, pos.XYZ.x, pos.XYZ.y, pos.XYZ.z)];
@@ -787,7 +788,7 @@ void MinecraftRun(Minecraft minecraft)
 					RendererUpdateFog(renderer);
 					glEnable(GL_TEXTURE_2D);
 					glEnable(GL_BLEND);
-					glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Water.png"));
+					//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Water.png"));
 					glCallList(lrenderer->ListID + 1);
 					glDisable(GL_BLEND);
 					glEnable(GL_BLEND);
@@ -801,7 +802,7 @@ void MinecraftRun(Minecraft minecraft)
 					}
 					if (count > 0)
 					{
-						glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Terrain.png"));
+						//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Terrain.png"));
 						glCallLists(count, GL_INT, lrenderer->ChunkDataCache);
 					}
 					
@@ -816,7 +817,7 @@ void MinecraftRun(Minecraft minecraft)
 						glNormal3f(0.0, 1.0, 0.0);
 						glEnable(GL_BLEND);
 						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-						glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Rain.png"));
+						//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Rain.png"));
 						for (int x = p.x - 5; x <= p.x + 5; x++)
 						{
 							for (int z = p.z - 5; z <= p.z + 5; z++)
@@ -881,7 +882,7 @@ void MinecraftRun(Minecraft minecraft)
 					{
 						glScalef(0.4, 0.4, 0.4);
 						glTranslatef(-0.5, -0.5, -0.5);
-						glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Terrain.png"));
+						//glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Terrain.png"));
 						BlockRenderPreview(held.Block);
 					}
 					glDisable(GL_NORMALIZE);

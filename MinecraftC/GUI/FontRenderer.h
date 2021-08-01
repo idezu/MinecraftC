@@ -1,5 +1,6 @@
 #pragma once
 #include <stdbool.h>
+#include <sokol/sokol_gfx.h>
 #include "../Render/TextureManager.h"
 #include "../Utilities/LinearMath.h"
 #include "../Utilities/String.h"
@@ -8,7 +9,7 @@ typedef struct FontRenderer
 {
 	int WidthMap[256];
 	char * TextureName;
-	int Texture;
+	sg_image Texture;
 	GameSettings Settings;
 } * FontRenderer;
 

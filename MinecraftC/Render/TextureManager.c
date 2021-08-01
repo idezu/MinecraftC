@@ -18,7 +18,7 @@ TextureManager TextureManagerCreate(GameSettings settings)
 	return manager;
 }
 
-int TextureManagerLoad(TextureManager manager, char * resource)
+sg_image TextureManagerLoad(TextureManager manager, char * resource)
 {
 	bool loaded = false;
 	int index = -1;
@@ -50,21 +50,29 @@ int TextureManagerLoad(TextureManager manager, char * resource)
 		}
 	}
 	
-	glGenTextures(1, &manager->IDBuffer);
-	glBindTexture(GL_TEXTURE_2D, manager->IDBuffer);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, p);
+	sg_image_desc imageInfo =
+	{
+		.type = SG_IMAGETYPE_2D,
+		.render_target = false,
+		.width = width,
+		.height = height,
+		.usage = SG_USAGE_IMMUTABLE,
+		.pixel_format = SG_PIXELFORMAT_RGBA8,
+		.min_filter = SG_FILTER_NEAREST,
+		.mag_filter = SG_FILTER_NEAREST,
+		.data = { .subimage[0][0] = { .ptr = p, .size = 4 * width * height } },
+	};
+	sg_image image = sg_make_image(&imageInfo);
 	stbi_image_free(p);
 	
 	manager->TextureNames = ListPush(manager->TextureNames, &resource);
-	manager->Textures = ListPush(manager->Textures, &manager->IDBuffer);
-	return manager->IDBuffer;
+	manager->Textures = ListPush(manager->Textures, &image);
+	return image;
 }
 
 void TextureManagerReload(TextureManager manager)
 {
-	for (int i = 0; i < ListCount(manager->Textures); i++) { glDeleteTextures(1, &manager->Textures[i]); }
+	for (int i = 0; i < ListCount(manager->Textures); i++) { sg_destroy_image(manager->Textures[i]); }
 	manager->Textures = ListClear(manager->Textures);
 	manager->TextureNames = ListClear(manager->TextureNames);
 }
