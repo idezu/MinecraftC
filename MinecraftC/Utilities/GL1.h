@@ -894,3 +894,5 @@ void glVertex4dv(const GLdouble * v);
 void glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid * pointer);
 
 void glViewport(GLint x, GLint y, GLsizei width, GLsizei height);
+
+void gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
