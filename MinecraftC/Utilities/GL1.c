@@ -5,9 +5,14 @@
 
 static struct GLState
 {
-	GLenum ErrorCode;
-	
+	GLenum AlphaFunc;
+	GLclampf AlphaReference;
 	bool Began;
+	GLclampd ClearDepth;
+	GLenum CullFace;
+	GLenum DepthFunc;
+	GLenum ErrorCode;
+	GLenum ShadeModel;
 	
 	struct
 	{
@@ -42,7 +47,13 @@ static struct GLState
 	} Enabled;
 } GL =
 {
+	.AlphaFunc = GL_ALWAYS,
+	.AlphaReference = 0.0f,
+	.ClearDepth = 1.0f,
+	.CullFace = GL_BACK,
+	.DepthFunc = GL_LESS,
 	.Enabled.Dither = true,
+	.ShadeModel = GL_SMOOTH,
 };
 
 static bool SetEnable(GLenum cap, bool enable)
@@ -93,13 +104,40 @@ static bool SetEnable(GLenum cap, bool enable)
 	}
 }
 
+void glAlphaFunc(GLenum func, GLclampf ref)
+{
+	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
+	if (func < GL_NEVER || func > GL_ALWAYS) { GL.ErrorCode = GL_INVALID_ENUM; }
+	else
+	{
+		GL.AlphaFunc = func;
+		GL.AlphaReference = ref > 1.0 ? 1.0 : (ref < 0.0 ? 0.0 : ref);
+	}
+}
+
+void glClearDepth(GLclampd depth)
+{
+	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
+	GL.ClearDepth = depth > 1.0 ? 1.0 : (depth < 0.0 ? 0.0 : depth);
+}
+
+void glCullFace(GLenum mode)
+{
+	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
+	if (mode == GL_BACK || mode == GL_FRONT || mode == GL_FRONT_AND_BACK) { GL.CullFace = mode; }
+	else { GL.ErrorCode = GL_INVALID_ENUM; }
+}
+
+void glDepthFunc(GLenum func)
+{
+	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
+	if (func < GL_NEVER || func > GL_ALWAYS) { GL.ErrorCode = GL_INVALID_ENUM; }
+	else { GL.DepthFunc = func; }
+}
+
 void glEnable(GLenum cap)
 {
-	if (GL.Began)
-	{
-		GL.ErrorCode = GL_INVALID_OPERATION;
-		return;
-	}
+	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
 	if (!SetEnable(cap, true))
 	{
 		GL.ErrorCode = GL_INVALID_ENUM;
@@ -108,11 +146,7 @@ void glEnable(GLenum cap)
 
 void glDisable(GLenum cap)
 {
-	if (GL.Began)
-	{
-		GL.ErrorCode = GL_INVALID_OPERATION;
-		return;
-	}
+	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
 	if (!SetEnable(cap, false))
 	{
 		GL.ErrorCode = GL_INVALID_ENUM;
@@ -121,10 +155,13 @@ void glDisable(GLenum cap)
 
 GLenum glGetError()
 {
-	if (GL.Began)
-	{
-		GL.ErrorCode = GL_INVALID_OPERATION;
-		return 0;
-	}
+	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return 0; }
 	return GL.ErrorCode;
+}
+
+void glShadeModel(GLenum mode)
+{
+	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
+	if (mode == GL_SMOOTH || mode == GL_FLAT) { GL.ShadeModel = mode; }
+	else { GL.ErrorCode = GL_INVALID_ENUM; }
 }
