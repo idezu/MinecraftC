@@ -1,14 +1,12 @@
-#define SOKOL_IMPL
-#define SOKOL_GLCORE33
-#include <sokol/sokol_gfx.h>
+#include <stdbool.h>
 #include <math.h>
 #include "GL1.h"
 
 #define MATRIX_STACK_SIZE 128
-#define IDENTITY_MATRIX (struct GLMatrix){ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 }
-#define STACK_ID(mode) ((mode) == GL_MODELVIEW ? 0 : ((mode) == GL_PROJECTION ? 1 : ((mode) == GL_TEXTURE ? 2 : 0)))
+#define IDENTITY_MATRIX (struct GL1Matrix){ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 }
+#define STACK_ID(mode) ((mode) == GL1_MODELVIEW ? 0 : ((mode) == GL1_PROJECTION ? 1 : ((mode) == GL1_TEXTURE ? 2 : 0)))
 
-struct GLMatrix
+struct GL1Matrix
 {
 	float M00, M10, M20, M30;
 	float M01, M11, M21, M31;
@@ -16,19 +14,19 @@ struct GLMatrix
 	float M03, M13, M23, M33;
 };
 
-static struct GLState
+static struct GL1State
 {
-	GLenum AlphaFunc;
-	GLclampf AlphaReference;
+	GL1enum AlphaFunc;
+	GL1clampf AlphaReference;
 	bool Began;
-	GLclampd ClearDepth;
-	GLenum CullFace;
-	GLenum DepthFunc;
-	GLenum ErrorCode;
-	GLenum MatrixMode;
-	GLenum ShadeModel;
+	GL1clampd ClearDepth;
+	GL1enum CullFace;
+	GL1enum DepthFunc;
+	GL1enum ErrorCode;
+	GL1enum MatrixMode;
+	GL1enum ShadeModel;
 	
-	struct GLMatrix MatrixStack[3][MATRIX_STACK_SIZE];
+	struct GL1Matrix MatrixStack[3][MATRIX_STACK_SIZE];
 	int MatrixSP[3];
 	
 	struct
@@ -62,140 +60,140 @@ static struct GLState
 		bool TextureGenS:1;
 		bool TextureGenT:1;
 	} Enabled;
-} GL =
+} GL1 =
 {
-	.AlphaFunc = GL_ALWAYS,
+	.AlphaFunc = GL1_ALWAYS,
 	.AlphaReference = 0.0f,
 	.ClearDepth = 1.0f,
-	.CullFace = GL_BACK,
-	.DepthFunc = GL_LESS,
+	.CullFace = GL1_BACK,
+	.DepthFunc = GL1_LESS,
 	.Enabled.Dither = true,
-	.MatrixMode = GL_MODELVIEW,
-	.ShadeModel = GL_SMOOTH,
+	.MatrixMode = GL1_MODELVIEW,
+	.ShadeModel = GL1_SMOOTH,
 	
 	.MatrixStack = { { IDENTITY_MATRIX }, { IDENTITY_MATRIX }, { IDENTITY_MATRIX } },
 };
 
-static bool SetEnable(GLenum cap, bool enable)
+static bool SetEnable(GL1enum cap, bool enable)
 {
 	switch (cap)
 	{
-		case GL_ALPHA_TEST: GL.Enabled.AlphaTest = enable; return true;
-		case GL_AUTO_NORMAL: GL.Enabled.AutoNormal = enable; return true;
-		case GL_BLEND: GL.Enabled.Blend = enable; return true;
-		case GL_CLIP_PLANE0: GL.Enabled.ClipPlane[0] = enable; return true;
-		case GL_CLIP_PLANE1: GL.Enabled.ClipPlane[1] = enable; return true;
-		case GL_CLIP_PLANE2: GL.Enabled.ClipPlane[2] = enable; return true;
-		case GL_CLIP_PLANE3: GL.Enabled.ClipPlane[3] = enable; return true;
-		case GL_CLIP_PLANE4: GL.Enabled.ClipPlane[4] = enable; return true;
-		case GL_CLIP_PLANE5: GL.Enabled.ClipPlane[5] = enable; return true;
-		case GL_COLOR_LOGIC_OP: GL.Enabled.ColorLogicOP = enable; return true;
-		case GL_COLOR_MATERIAL: GL.Enabled.ColorMaterial = enable; return true;
-		case GL_CULL_FACE: GL.Enabled.CullFace = enable; return true;
-		case GL_DEPTH_TEST: GL.Enabled.DepthTest = enable; return true;
-		case GL_DITHER: GL.Enabled.Dither = enable; return true;
-		case GL_FOG: GL.Enabled.Fog = enable; return true;
-		case GL_INDEX_LOGIC_OP: GL.Enabled.IndexLogicOP = enable; return true;
-		case GL_LIGHT0: GL.Enabled.Light[0] = enable; return true;
-		case GL_LIGHT1: GL.Enabled.Light[1] = enable; return true;
-		case GL_LIGHT2: GL.Enabled.Light[2] = enable; return true;
-		case GL_LIGHT3: GL.Enabled.Light[3] = enable; return true;
-		case GL_LIGHT4: GL.Enabled.Light[4] = enable; return true;
-		case GL_LIGHT5: GL.Enabled.Light[5] = enable; return true;
-		case GL_LIGHT6: GL.Enabled.Light[6] = enable; return true;
-		case GL_LIGHT7: GL.Enabled.Light[7] = enable; return true;
-		case GL_LIGHTING: GL.Enabled.Lighting = enable; return true;
-		case GL_LINE_SMOOTH: GL.Enabled.LineSmooth = enable; return true;
-		case GL_NORMALIZE: GL.Enabled.Normalize = enable; return true;
-		case GL_POINT_SMOOTH: GL.Enabled.PointSmooth = enable; return true;
-		case GL_POLYGON_OFFSET_FILL: GL.Enabled.PolygonOffsetFill = enable; return true;
-		case GL_POLYGON_OFFSET_LINE: GL.Enabled.PolygonOffsetLine = enable; return true;
-		case GL_POLYGON_OFFSET_POINT: GL.Enabled.PolygonOffsetPoint = enable; return true;
-		case GL_POLYGON_SMOOTH: GL.Enabled.PolygonSmooth = enable; return true;
-		case GL_SCISSOR_TEST: GL.Enabled.ScissorTest = enable; return true;
-		case GL_STENCIL_TEST: GL.Enabled.StencilTest = enable; return true;
-		case GL_TEXTURE_1D: GL.Enabled.Texture1D = enable; return true;
-		case GL_TEXTURE_2D: GL.Enabled.Texture2D = enable; return true;
-		case GL_TEXTURE_GEN_Q: GL.Enabled.TextureGenQ = enable; return true;
-		case GL_TEXTURE_GEN_R: GL.Enabled.TextureGenR = enable; return true;
-		case GL_TEXTURE_GEN_S: GL.Enabled.TextureGenS = enable; return true;
-		case GL_TEXTURE_GEN_T: GL.Enabled.TextureGenT = enable; return true;
+		case GL1_ALPHA_TEST: GL1.Enabled.AlphaTest = enable; return true;
+		case GL1_AUTO_NORMAL: GL1.Enabled.AutoNormal = enable; return true;
+		case GL1_BLEND: GL1.Enabled.Blend = enable; return true;
+		case GL1_CLIP_PLANE0: GL1.Enabled.ClipPlane[0] = enable; return true;
+		case GL1_CLIP_PLANE1: GL1.Enabled.ClipPlane[1] = enable; return true;
+		case GL1_CLIP_PLANE2: GL1.Enabled.ClipPlane[2] = enable; return true;
+		case GL1_CLIP_PLANE3: GL1.Enabled.ClipPlane[3] = enable; return true;
+		case GL1_CLIP_PLANE4: GL1.Enabled.ClipPlane[4] = enable; return true;
+		case GL1_CLIP_PLANE5: GL1.Enabled.ClipPlane[5] = enable; return true;
+		case GL1_COLOR_LOGIC_OP: GL1.Enabled.ColorLogicOP = enable; return true;
+		case GL1_COLOR_MATERIAL: GL1.Enabled.ColorMaterial = enable; return true;
+		case GL1_CULL_FACE: GL1.Enabled.CullFace = enable; return true;
+		case GL1_DEPTH_TEST: GL1.Enabled.DepthTest = enable; return true;
+		case GL1_DITHER: GL1.Enabled.Dither = enable; return true;
+		case GL1_FOG: GL1.Enabled.Fog = enable; return true;
+		case GL1_INDEX_LOGIC_OP: GL1.Enabled.IndexLogicOP = enable; return true;
+		case GL1_LIGHT0: GL1.Enabled.Light[0] = enable; return true;
+		case GL1_LIGHT1: GL1.Enabled.Light[1] = enable; return true;
+		case GL1_LIGHT2: GL1.Enabled.Light[2] = enable; return true;
+		case GL1_LIGHT3: GL1.Enabled.Light[3] = enable; return true;
+		case GL1_LIGHT4: GL1.Enabled.Light[4] = enable; return true;
+		case GL1_LIGHT5: GL1.Enabled.Light[5] = enable; return true;
+		case GL1_LIGHT6: GL1.Enabled.Light[6] = enable; return true;
+		case GL1_LIGHT7: GL1.Enabled.Light[7] = enable; return true;
+		case GL1_LIGHTING: GL1.Enabled.Lighting = enable; return true;
+		case GL1_LINE_SMOOTH: GL1.Enabled.LineSmooth = enable; return true;
+		case GL1_NORMALIZE: GL1.Enabled.Normalize = enable; return true;
+		case GL1_POINT_SMOOTH: GL1.Enabled.PointSmooth = enable; return true;
+		case GL1_POLYGON_OFFSET_FILL: GL1.Enabled.PolygonOffsetFill = enable; return true;
+		case GL1_POLYGON_OFFSET_LINE: GL1.Enabled.PolygonOffsetLine = enable; return true;
+		case GL1_POLYGON_OFFSET_POINT: GL1.Enabled.PolygonOffsetPoint = enable; return true;
+		case GL1_POLYGON_SMOOTH: GL1.Enabled.PolygonSmooth = enable; return true;
+		case GL1_SCISSOR_TEST: GL1.Enabled.ScissorTest = enable; return true;
+		case GL1_STENCIL_TEST: GL1.Enabled.StencilTest = enable; return true;
+		case GL1_TEXTURE_1D: GL1.Enabled.Texture1D = enable; return true;
+		case GL1_TEXTURE_2D: GL1.Enabled.Texture2D = enable; return true;
+		case GL1_TEXTURE_GEN_Q: GL1.Enabled.TextureGenQ = enable; return true;
+		case GL1_TEXTURE_GEN_R: GL1.Enabled.TextureGenR = enable; return true;
+		case GL1_TEXTURE_GEN_S: GL1.Enabled.TextureGenS = enable; return true;
+		case GL1_TEXTURE_GEN_T: GL1.Enabled.TextureGenT = enable; return true;
 		default: return false;
 	}
 }
 
-void glAlphaFunc(GLenum func, GLclampf ref)
+void gl1AlphaFunc(GL1enum func, GL1clampf ref)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	if (func < GL_NEVER || func > GL_ALWAYS) { GL.ErrorCode = GL_INVALID_ENUM; }
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	if (func < GL1_NEVER || func > GL1_ALWAYS) { GL1.ErrorCode = GL1_INVALID_ENUM; }
 	else
 	{
-		GL.AlphaFunc = func;
-		GL.AlphaReference = ref > 1.0 ? 1.0 : (ref < 0.0 ? 0.0 : ref);
+		GL1.AlphaFunc = func;
+		GL1.AlphaReference = ref > 1.0 ? 1.0 : (ref < 0.0 ? 0.0 : ref);
 	}
 }
 
-void glClearDepth(GLclampd depth)
+void gl1ClearDepth(GL1clampd depth)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	GL.ClearDepth = depth > 1.0 ? 1.0 : (depth < 0.0 ? 0.0 : depth);
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	GL1.ClearDepth = depth > 1.0 ? 1.0 : (depth < 0.0 ? 0.0 : depth);
 }
 
-void glCullFace(GLenum mode)
+void gl1CullFace(GL1enum mode)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	if (mode == GL_BACK || mode == GL_FRONT || mode == GL_FRONT_AND_BACK) { GL.CullFace = mode; }
-	else { GL.ErrorCode = GL_INVALID_ENUM; }
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	if (mode == GL1_BACK || mode == GL1_FRONT || mode == GL1_FRONT_AND_BACK) { GL1.CullFace = mode; }
+	else { GL1.ErrorCode = GL1_INVALID_ENUM; }
 }
 
-void glDepthFunc(GLenum func)
+void gl1DepthFunc(GL1enum func)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	if (func < GL_NEVER || func > GL_ALWAYS) { GL.ErrorCode = GL_INVALID_ENUM; }
-	else { GL.DepthFunc = func; }
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	if (func < GL1_NEVER || func > GL1_ALWAYS) { GL1.ErrorCode = GL1_INVALID_ENUM; }
+	else { GL1.DepthFunc = func; }
 }
 
-void glEnable(GLenum cap)
+void gl1Enable(GL1enum cap)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	if (!SetEnable(cap, true)) { GL.ErrorCode = GL_INVALID_ENUM; }
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	if (!SetEnable(cap, true)) { GL1.ErrorCode = GL1_INVALID_ENUM; }
 }
 
-void glDisable(GLenum cap)
+void gl1Disable(GL1enum cap)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	if (!SetEnable(cap, false)) { GL.ErrorCode = GL_INVALID_ENUM; }
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	if (!SetEnable(cap, false)) { GL1.ErrorCode = GL1_INVALID_ENUM; }
 }
 
-void glFrustum(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
+void gl1Frustum(GL1double left, GL1double right, GL1double bottom, GL1double top, GL1double zNear, GL1double zFar)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	if (zNear < 0.0 || zFar < 0.0) { GL.ErrorCode = GL_INVALID_VALUE; return; }
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	if (zNear < 0.0 || zFar < 0.0) { GL1.ErrorCode = GL1_INVALID_VALUE; return; }
 	double a = (right + left) / (right - left);
 	double b = (top + bottom) / (top - bottom);
 	double c = -(zFar + zNear) / (zFar - zNear);
 	double d = -(2.0 * zFar * zNear) / (zFar - zNear);
 	double e = (2.0 * zNear) / (right - left);
 	double f = (2.0 * zNear) / (top - bottom);
-	glMultMatrixf((float []){ e, 0.0, 0.0, 0.0, 0.0, f, 0.0, 0.0, a, b, c, 1.0, 0.0, 0.0, d, 0.0 });
+	gl1MultMatrixf((float []){ e, 0.0, 0.0, 0.0, 0.0, f, 0.0, 0.0, a, b, c, 1.0, 0.0, 0.0, d, 0.0 });
 }
 
-GLenum glGetError()
+GL1enum gl1GetError()
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return 0; }
-	return GL.ErrorCode;
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return 0; }
+	return GL1.ErrorCode;
 }
 
-void glLoadIdentity()
+void gl1LoadIdentity()
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	GL.MatrixStack[STACK_ID(GL.MatrixMode)][GL.MatrixSP[STACK_ID(GL.MatrixMode)]] = IDENTITY_MATRIX;
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	GL1.MatrixStack[STACK_ID(GL1.MatrixMode)][GL1.MatrixSP[STACK_ID(GL1.MatrixMode)]] = IDENTITY_MATRIX;
 }
 
-void glLoadMatrixd(const GLdouble * m)
+void gl1LoadMatrixd(const GL1double * m)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	GL.MatrixStack[STACK_ID(GL.MatrixMode)][GL.MatrixSP[STACK_ID(GL.MatrixMode)]] = (struct GLMatrix)
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	GL1.MatrixStack[STACK_ID(GL1.MatrixMode)][GL1.MatrixSP[STACK_ID(GL1.MatrixMode)]] = (struct GL1Matrix)
 	{
 		m[0], m[4], m[8], m[12],
 		m[1], m[5], m[9], m[13],
@@ -204,10 +202,10 @@ void glLoadMatrixd(const GLdouble * m)
 	};
 }
 
-void glLoadMatrixf(const GLfloat * m)
+void gl1LoadMatrixf(const GL1float * m)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	GL.MatrixStack[STACK_ID(GL.MatrixMode)][GL.MatrixSP[STACK_ID(GL.MatrixMode)]] = (struct GLMatrix)
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	GL1.MatrixStack[STACK_ID(GL1.MatrixMode)][GL1.MatrixSP[STACK_ID(GL1.MatrixMode)]] = (struct GL1Matrix)
 	{
 		m[0], m[4], m[8], m[12],
 		m[1], m[5], m[9], m[13],
@@ -216,16 +214,16 @@ void glLoadMatrixf(const GLfloat * m)
 	};
 }
 
-void glMatrixMode(GLenum mode)
+void gl1MatrixMode(GL1enum mode)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	if (mode == GL_MODELVIEW || mode == GL_PROJECTION || mode == GL_TEXTURE) { GL.MatrixMode = mode; }
-	else { GL.ErrorCode = GL_INVALID_ENUM; }
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	if (mode == GL1_MODELVIEW || mode == GL1_PROJECTION || mode == GL1_TEXTURE) { GL1.MatrixMode = mode; }
+	else { GL1.ErrorCode = GL1_INVALID_ENUM; }
 }
 
-static struct GLMatrix MatrixMultiply(struct GLMatrix l, struct GLMatrix r)
+static struct GL1Matrix MatrixMultiply(struct GL1Matrix l, struct GL1Matrix r)
 {
-	return (struct GLMatrix)
+	return (struct GL1Matrix)
 	{
 		r.M00 * l.M00 + r.M10 * l.M01 + r.M20 * l.M02 + r.M30 * l.M03,
 		r.M00 * l.M10 + r.M10 * l.M11 + r.M20 * l.M12 + r.M30 * l.M13,
@@ -246,66 +244,66 @@ static struct GLMatrix MatrixMultiply(struct GLMatrix l, struct GLMatrix r)
 	};
 }
 
-void glMultMatrixf(const GLfloat * m)
+void gl1MultMatrixf(const GL1float * m)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	struct GLMatrix matrix =
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	struct GL1Matrix matrix =
 	{
 		m[0], m[4], m[8], m[12],
 		m[1], m[5], m[9], m[13],
 		m[2], m[6], m[10], m[14],
 		m[3], m[7], m[11], m[15],
 	};
-	int i = STACK_ID(GL.MatrixMode);
-	GL.MatrixStack[i][GL.MatrixSP[i]] = MatrixMultiply(GL.MatrixStack[i][GL.MatrixSP[i]], matrix);
+	int i = STACK_ID(GL1.MatrixMode);
+	GL1.MatrixStack[i][GL1.MatrixSP[i]] = MatrixMultiply(GL1.MatrixStack[i][GL1.MatrixSP[i]], matrix);
 }
 
-void glMultMatrixd(const GLdouble * m)
+void gl1MultMatrixd(const GL1double * m)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	struct GLMatrix matrix =
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	struct GL1Matrix matrix =
 	{
 		m[0], m[4], m[8], m[12],
 		m[1], m[5], m[9], m[13],
 		m[2], m[6], m[10], m[14],
 		m[3], m[7], m[11], m[15],
 	};
-	int i = STACK_ID(GL.MatrixMode);
-	GL.MatrixStack[i][GL.MatrixSP[i]] = MatrixMultiply(GL.MatrixStack[i][GL.MatrixSP[i]], matrix);
+	int i = STACK_ID(GL1.MatrixMode);
+	GL1.MatrixStack[i][GL1.MatrixSP[i]] = MatrixMultiply(GL1.MatrixStack[i][GL1.MatrixSP[i]], matrix);
 }
 
-void glOrtho(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
+void gl1Ortho(GL1double left, GL1double right, GL1double bottom, GL1double top, GL1double zNear, GL1double zFar)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
 	double a = 2.0 / (right - left);
 	double b = 2.0 / (top - bottom);
 	double c = -2.0 / (zFar - zNear);
 	double tx = -(right + left) / (right - left);
 	double ty = -(top + bottom) / (top - bottom);
 	double tz = -(zFar + zNear) / (zFar - zNear);
-	glMultMatrixf((float []){ a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 0.0, tx, ty, tz, 1.0 });
+	gl1MultMatrixf((float []){ a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 0.0, tx, ty, tz, 1.0 });
 }
 
-void glPushMatrix()
+void gl1PushMatrix()
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	int i = STACK_ID(GL.MatrixMode);
-	if (GL.MatrixSP[i] == MATRIX_STACK_SIZE - 1) { GL.ErrorCode = GL_STACK_OVERFLOW; return; }
-	GL.MatrixStack[i][GL.MatrixSP[i] + 1] = GL.MatrixStack[i][GL.MatrixSP[i]];
-	GL.MatrixSP[i]++;
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	int i = STACK_ID(GL1.MatrixMode);
+	if (GL1.MatrixSP[i] == MATRIX_STACK_SIZE - 1) { GL1.ErrorCode = GL1_STACK_OVERFLOW; return; }
+	GL1.MatrixStack[i][GL1.MatrixSP[i] + 1] = GL1.MatrixStack[i][GL1.MatrixSP[i]];
+	GL1.MatrixSP[i]++;
 }
 
-void glPopMatrix()
+void gl1PopMatrix()
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	int i = STACK_ID(GL.MatrixMode);
-	if (GL.MatrixSP[i] == 0) { GL.ErrorCode = GL_STACK_UNDERFLOW; return; }
-	GL.MatrixSP[i]--;
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	int i = STACK_ID(GL1.MatrixMode);
+	if (GL1.MatrixSP[i] == 0) { GL1.ErrorCode = GL1_STACK_UNDERFLOW; return; }
+	GL1.MatrixSP[i]--;
 }
 
-void glRotated(GLdouble angle, GLdouble x, GLdouble y, GLdouble z)
+void gl1Rotated(GL1double angle, GL1double x, GL1double y, GL1double z)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
 	double dist = sqrt(x * x + y * y + z * z);
 	x /= dist;
 	y /= dist;
@@ -319,46 +317,46 @@ void glRotated(GLdouble angle, GLdouble x, GLdouble y, GLdouble z)
 		x * z * (1.0 - c) + y * s, y * z * (1.0 - c) - x * s, z * z * (1.0 - c) + c, 0.0,
 		0.0, 0.0, 0.0, 1.0,
 	};
-	glMultMatrixf(matrix);
+	gl1MultMatrixf(matrix);
 }
 
-void glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
+void gl1Rotatef(GL1float angle, GL1float x, GL1float y, GL1float z)
 {
-	glRotated(angle, x, y, z);
+	gl1Rotated(angle, x, y, z);
 }
 
-void glScaled(GLdouble x, GLdouble y, GLdouble z)
+void gl1Scaled(GL1double x, GL1double y, GL1double z)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	glMultMatrixf((float []){ x, 0.0, 0.0, 0.0, 0.0, y, 0.0, 0.0, 0.0, 0.0, z, 0.0, 0.0, 0.0, 0.0, 1.0 });
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	gl1MultMatrixf((float []){ x, 0.0, 0.0, 0.0, 0.0, y, 0.0, 0.0, 0.0, 0.0, z, 0.0, 0.0, 0.0, 0.0, 1.0 });
 }
 
-void glScalef(GLfloat x, GLfloat y, GLfloat z)
+void gl1Scalef(GL1float x, GL1float y, GL1float z)
 {
-	glScaled(x, y, z);
+	gl1Scaled(x, y, z);
 }
 
-void glShadeModel(GLenum mode)
+void gl1ShadeModel(GL1enum mode)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	if (mode == GL_SMOOTH || mode == GL_FLAT) { GL.ShadeModel = mode; }
-	else { GL.ErrorCode = GL_INVALID_ENUM; }
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	if (mode == GL1_SMOOTH || mode == GL1_FLAT) { GL1.ShadeModel = mode; }
+	else { GL1.ErrorCode = GL1_INVALID_ENUM; }
 }
 
-void glTranslated(GLdouble x, GLdouble y, GLdouble z)
+void gl1Translated(GL1double x, GL1double y, GL1double z)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
-	glMultMatrixf((float []){ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, x, y, z, 1.0 });
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
+	gl1MultMatrixf((float []){ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, x, y, z, 1.0 });
 }
 
-void glTranslatef(GLfloat x, GLfloat y, GLfloat z)
+void gl1Translatef(GL1float x, GL1float y, GL1float z)
 {
-	glTranslated(x, y, z);
+	gl1Translated(x, y, z);
 }
 
-void gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar)
+void gl1uPerspective(GL1double fovy, GL1double aspect, GL1double zNear, GL1double zFar)
 {
-	if (GL.Began) { GL.ErrorCode = GL_INVALID_OPERATION; return; }
+	if (GL1.Began) { GL1.ErrorCode = GL1_INVALID_OPERATION; return; }
 	double f = 1.0 / tan((fovy / 2.0) * M_PI / 180.0);
 	float matrix[16] =
 	{
@@ -367,5 +365,5 @@ void gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFa
 		0.0, 0.0, (zFar + zNear) / (zNear - zFar), -1.0,
 		0.0, 0.0, (2.0 * zFar * zNear) / (zNear - zFar), 0.0
 	};
-	glMultMatrixf(matrix);
+	gl1MultMatrixf(matrix);
 }

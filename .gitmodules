@@ -1,3 +1,0 @@
-[submodule "Include/sokol"]
-	path = Include/sokol
-	url = https://github.com/floooh/sokol.git
