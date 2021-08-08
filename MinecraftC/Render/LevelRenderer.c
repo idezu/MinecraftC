@@ -15,8 +15,8 @@ LevelRenderer LevelRendererCreate(Minecraft minecraft, TextureManager textures)
 		.LastLoad = one3f * -9999.0,
 		.Minecraft = minecraft,
 		.Textures = textures,
-		.ListID = glGenLists(2),
-		.BaseListID = glGenLists(4096 << 6 << 1),
+		.ListID = gl1GenLists(2),
+		.BaseListID = gl1GenLists(4096 << 6 << 1),
 	};
 	return renderer;
 }
@@ -57,8 +57,8 @@ void LevelRendererRefresh(LevelRenderer renderer)
 	for (int i = 0; i < ListCount(renderer->Chunks); i++) { renderer->Chunks[i]->Loaded = false; }
 	renderer->Chunks = ListClear(renderer->Chunks);
 	
-	glNewList(renderer->ListID, GL_COMPILE);
-	glColor4f(0.5, 0.5, 0.5, 1.0);
+	gl1NewList(renderer->ListID, GL1_COMPILE);
+	gl1Color4f(0.5, 0.5, 0.5, 1.0);
 	float ground = LevelGetGroundLevel(renderer->Level);
 	int a = fmin(128, fmin(renderer->Level->Width, renderer->Level->Height));
 	int b = 2048 / a;
@@ -77,7 +77,7 @@ void LevelRendererRefresh(LevelRenderer renderer)
 	}
 	ShapeRendererEnd();
 	
-	glColor3f(0.8, 0.8, 0.8);
+	gl1Color3f(0.8, 0.8, 0.8);
 	ShapeRendererBegin();
 	for (int i = 0; i < renderer->Level->Width; i += a)
 	{
@@ -90,7 +90,7 @@ void LevelRendererRefresh(LevelRenderer renderer)
 		ShapeRendererVertexUV((float3){ i + a, 0.0, renderer->Level->Height }, (float2){ a, 0.0 });
 		ShapeRendererVertexUV((float3){ i, 0.0, renderer->Level->Height }, (float2){ 0.0, 0.0 });
 	}
-	glColor3f(0.6, 0.6, 0.6);
+	gl1Color3f(0.6, 0.6, 0.6);
 	for (int i = 0; i < renderer->Level->Height; i += a)
 	{
 		ShapeRendererVertexUV((float3){ 0.0, ground, i }, (float2){ 0.0, 0.0 });
@@ -103,12 +103,12 @@ void LevelRendererRefresh(LevelRenderer renderer)
 		ShapeRendererVertexUV((float3){ renderer->Level->Width, ground, i }, (float2){ 0.0, 0.0 });
 	}
 	ShapeRendererEnd();
-	glEndList();
+	gl1EndList();
 	
-	glNewList(renderer->ListID + 1, GL_COMPILE);
-	glColor3f(1.0, 1.0, 1.0);
+	gl1NewList(renderer->ListID + 1, GL1_COMPILE);
+	gl1Color3f(1.0, 1.0, 1.0);
 	float water = LevelGetWaterLevel(renderer->Level);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	gl1BlendFunc(GL1_SRC_ALPHA, GL1_ONE_MINUS_SRC_ALPHA);
 	ShapeRendererBegin();
 	for (int i = -a * b; i < renderer->Level->Width + a * b; i += a)
 	{
@@ -129,8 +129,8 @@ void LevelRendererRefresh(LevelRenderer renderer)
 		}
 	}
 	ShapeRendererEnd();
-	glDisable(GL_BLEND);
-	glEndList();
+	gl1Disable(GL1_BLEND);
+	gl1EndList();
 	LevelRendererQueueChunks(renderer, (int3){ 0, 0, 0 }, (int3){ renderer->Level->Width, renderer->Level->Depth, renderer->Level->Height });
 }
 
@@ -147,8 +147,8 @@ int LevelRendererSortChunks(LevelRenderer renderer, Player player, int pass)
 	for (int i = 0; i < renderer->ChunkCacheCount; i++) { count = ChunkAppendLists(renderer->LoadQueue[i], renderer->ChunkDataCache, count, pass); }
 	if (count > 0)
 	{
-		glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(renderer->Textures, "Terrain.png"));
-		glCallLists(count, GL_INT, renderer->ChunkDataCache);
+		gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(renderer->Textures, "Terrain.png"));
+		gl1CallLists(count, GL1_INT, renderer->ChunkDataCache);
 	}
 	return count;
 }
@@ -182,8 +182,8 @@ void LevelRendererQueueChunks(LevelRenderer renderer, int3 v0, int3 v1)
 
 void LevelRendererDestroy(LevelRenderer renderer)
 {
-	glDeleteLists(renderer->BaseListID, 4096 << 6 << 1);
-	glDeleteLists(renderer->ListID, 2);
+	gl1DeleteLists(renderer->BaseListID, 4096 << 6 << 1);
+	gl1DeleteLists(renderer->ListID, 2);
 	ListDestroy(renderer->Chunks);
 	MemoryFree(renderer->ChunkDataCache);
 	if (renderer->ChunkCache != NULL)

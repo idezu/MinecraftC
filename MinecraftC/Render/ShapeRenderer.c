@@ -29,19 +29,19 @@ void ShapeRendererEnd()
 {
 	if (ShapeRenderer.Vertices > 0)
 	{
-		if (ShapeRenderer.HasTexture && ShapeRenderer.HasColor) { glInterleavedArrays(GL_T2F_C3F_V3F, 0, ShapeRenderer.Buffer); }
-		else if (ShapeRenderer.HasTexture) { glInterleavedArrays(GL_T2F_V3F, 0, ShapeRenderer.Buffer); }
-		else if (ShapeRenderer.HasColor) { glInterleavedArrays(GL_C3F_V3F, 0, ShapeRenderer.Buffer); }
-		else { glInterleavedArrays(GL_V3F, 0, ShapeRenderer.Buffer); }
+		if (ShapeRenderer.HasTexture && ShapeRenderer.HasColor) { gl1InterleavedArrays(GL1_T2F_C3F_V3F, 0, ShapeRenderer.Buffer); }
+		else if (ShapeRenderer.HasTexture) { gl1InterleavedArrays(GL1_T2F_V3F, 0, ShapeRenderer.Buffer); }
+		else if (ShapeRenderer.HasColor) { gl1InterleavedArrays(GL1_C3F_V3F, 0, ShapeRenderer.Buffer); }
+		else { gl1InterleavedArrays(GL1_V3F, 0, ShapeRenderer.Buffer); }
 		
-		glEnableClientState(GL_VERTEX_ARRAY);
-		if (ShapeRenderer.HasTexture) { glEnableClientState(GL_TEXTURE_COORD_ARRAY); }
-		if (ShapeRenderer.HasColor) { glEnableClientState(GL_COLOR_ARRAY); }
+		gl1EnableClientState(GL1_VERTEX_ARRAY);
+		if (ShapeRenderer.HasTexture) { gl1EnableClientState(GL1_TEXTURE_COORD_ARRAY); }
+		if (ShapeRenderer.HasColor) { gl1EnableClientState(GL1_COLOR_ARRAY); }
 		
-		glDrawArrays(GL_QUADS, 0, ShapeRenderer.Vertices);
-		glDisableClientState(GL_VERTEX_ARRAY);
-		if (ShapeRenderer.HasTexture) { glDisableClientState(GL_TEXTURE_COORD_ARRAY); }
-		if (ShapeRenderer.HasColor) { glDisableClientState(GL_COLOR_ARRAY); }
+		gl1DrawArrays(GL1_QUADS, 0, ShapeRenderer.Vertices);
+		gl1DisableClientState(GL1_VERTEX_ARRAY);
+		if (ShapeRenderer.HasTexture) { gl1DisableClientState(GL1_TEXTURE_COORD_ARRAY); }
+		if (ShapeRenderer.HasColor) { gl1DisableClientState(GL1_COLOR_ARRAY); }
 	}
 	
 	ShapeRendererClear();
@@ -105,7 +105,7 @@ void ShapeRendererNoColor()
 
 void ShapeRendererNormal(float3 normal)
 {
-	glNormal3f(normal.x, normal.y, normal.z);
+	gl1Normal3f(normal.x, normal.y, normal.z);
 }
 
 void ShapeRendererDeinitialize()

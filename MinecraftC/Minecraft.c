@@ -92,7 +92,7 @@ void MinecraftShutdown(Minecraft minecraft)
 
 static void CheckGLError(Minecraft minecraft, char * msg)
 {
-	int error = glGetError();
+	int error = gl1GetError();
 	if (error != 0)
 	{
 		LogError("GL: %i\n", error);
@@ -175,14 +175,14 @@ static void Tick(Minecraft minecraft, list(SDL_Event) events)
 	hud->Ticks++;
 	for (int i = 0; i < ListCount(hud->Chat); i++) { hud->Chat[i]->Time++; }
 	
-	glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Terrain.png"));
+	gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Terrain.png"));
 	for (int i = 0; i < ListCount(minecraft->TextureManager->Animations); i++)
 	{
 		AnimatedTexture texture = minecraft->TextureManager->Animations[i];
 		texture->Anaglyph = minecraft->Settings->Anaglyph;
 		AnimatedTextureAnimate(texture);
 		memcpy(minecraft->TextureManager->TextureBuffer, texture->Data, 1024);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, texture->TextureID % 16 << 4, texture->TextureID / 16 << 4, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, minecraft->TextureManager->TextureBuffer);
+		gl1TexSubImage2D(GL1_TEXTURE_2D, 0, texture->TextureID % 16 << 4, texture->TextureID / 16 << 4, 16, 16, GL1_RGBA, GL1_UNSIGNED_BYTE, minecraft->TextureManager->TextureBuffer);
 	}
 	
 	PlayerData player = minecraft->Player->TypeData;
@@ -342,17 +342,17 @@ void MinecraftRun(Minecraft minecraft)
 	if (minecraft->Context == NULL) { LogFatal("Failed to create OpenGL context: %s\n", SDL_GetError()); }
 	
 	CheckGLError(minecraft, "Pre startup");
-	glEnable(GL_TEXTURE_2D);
-	glShadeModel(GL_SMOOTH);
-	glClearDepth(1.0);
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.0);
-	glCullFace(GL_BACK);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	gl1Enable(GL1_TEXTURE_2D);
+	gl1ShadeModel(GL1_SMOOTH);
+	gl1ClearDepth(1.0);
+	gl1Enable(GL1_DEPTH_TEST);
+	gl1DepthFunc(GL1_LEQUAL);
+	gl1Enable(GL1_ALPHA_TEST);
+	gl1AlphaFunc(GL1_GREATER, 0.0);
+	gl1CullFace(GL1_BACK);
+	gl1MatrixMode(GL1_PROJECTION);
+	gl1LoadIdentity();
+	gl1MatrixMode(GL1_MODELVIEW);
 	CheckGLError(minecraft, "Startup");
 	
 	BlocksInitialize();
@@ -366,7 +366,7 @@ void MinecraftRun(Minecraft minecraft)
 	TextureManagerRegisterAnimation(minecraft->TextureManager, WaterTextureCreate());
 	minecraft->Font = FontRendererCreate(minecraft->Settings, "Default.png", minecraft->TextureManager);
 	minecraft->LevelRenderer = LevelRendererCreate(minecraft, minecraft->TextureManager);
-	glViewport(0, 0, minecraft->FrameWidth, minecraft->FrameHeight);
+	gl1Viewport(0, 0, minecraft->FrameWidth, minecraft->FrameHeight);
 	
 	if (!minecraft->LevelLoaded)
 	{
@@ -423,7 +423,7 @@ void MinecraftRun(Minecraft minecraft)
 			{
 				SDL_GetWindowSize(minecraft->Window, &minecraft->Width, &minecraft->Height);
 				SDL_GL_GetDrawableSize(minecraft->Window, &minecraft->FrameWidth, &minecraft->FrameHeight);
-				glViewport(0, 0, minecraft->FrameWidth, minecraft->FrameHeight);
+				gl1Viewport(0, 0, minecraft->FrameWidth, minecraft->FrameHeight);
 				HUDScreenDestroy(minecraft->HUD);
 				minecraft->HUD = HUDScreenCreate(minecraft, minecraft->Width, minecraft->Height);
 				if (minecraft->CurrentScreen != NULL)
@@ -475,7 +475,7 @@ void MinecraftRun(Minecraft minecraft)
 		}
 		
 		CheckGLError(minecraft, "Pre render");
-		glEnable(GL_TEXTURE_2D);
+		gl1Enable(GL1_TEXTURE_2D);
 		if (!minecraft->Online)
 		{
 			float delta = timer->Delta;
@@ -532,18 +532,18 @@ void MinecraftRun(Minecraft minecraft)
 				{
 					if (i == 2)
 					{
-						glColorMask(true, true, true, true);
+						gl1ColorMask(true, true, true, true);
 						break;
 					}
 					
 					if (minecraft->Settings->Anaglyph)
 					{
-						if (i == 0) { glColorMask(false, true, true, false); }
-						else { glColorMask(true, false, false, false); }
+						if (i == 0) { gl1ColorMask(false, true, true, false); }
+						else { gl1ColorMask(true, false, false, false); }
 					}
 					
 					Level level = minecraft->Level;
-					glViewport(0, 0, minecraft->FrameWidth, minecraft->FrameHeight);
+					gl1Viewport(0, 0, minecraft->FrameWidth, minecraft->FrameHeight);
 					float a = 1.0 / (4 - minecraft->Settings->ViewDistance);
 					a = 1.0 - pow(a, 0.25);
 					float4 sky = ColorToFloat4(level->SkyColor);
@@ -561,27 +561,27 @@ void MinecraftRun(Minecraft minecraft)
 						renderer->FogColor.rgb = (float3){ renderer->FogColor.r * 30.0 + renderer->FogColor.g * 59.0 + renderer->FogColor.b * 11.0, renderer->FogColor.r * 30.0 + renderer->FogColor.g * 70.0, renderer->FogColor.r * 30.0 + renderer->FogColor.b * 70.0 } / 100.0;
 					}
 					
-					glClearColor(renderer->FogColor.r, renderer->FogColor.g, renderer->FogColor.b, 0.0);
-					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+					gl1ClearColor(renderer->FogColor.r, renderer->FogColor.g, renderer->FogColor.b, 0.0);
+					gl1Clear(GL1_COLOR_BUFFER_BIT | GL1_DEPTH_BUFFER_BIT);
 					renderer->FogColorMultiplier = 1.0;
-					glEnable(GL_CULL_FACE);
+					gl1Enable(GL1_CULL_FACE);
 					renderer->FogEnd = (512 >> (minecraft->Settings->ViewDistance << 1));
-					glMatrixMode(GL_PROJECTION);
-					glLoadIdentity();
-					if (minecraft->Settings->Anaglyph) { glTranslatef(-((i << 1) - 1) * 0.07, 0.0, 0.0); }
+					gl1MatrixMode(GL1_PROJECTION);
+					gl1LoadIdentity();
+					if (minecraft->Settings->Anaglyph) { gl1Translatef(-((i << 1) - 1) * 0.07, 0.0, 0.0); }
 					
-					gluPerspective(70.0, (float)minecraft->Width / (float)minecraft->Height, 0.05, renderer->FogEnd);
-					glMatrixMode(GL_MODELVIEW);
-					glLoadIdentity();
-					if (minecraft->Settings->Anaglyph) { glTranslatef(((i << 1) - 1) * 0.1, 0.0, 0.0); }
+					gl1uPerspective(70.0, (float)minecraft->Width / (float)minecraft->Height, 0.05, renderer->FogEnd);
+					gl1MatrixMode(GL1_MODELVIEW);
+					gl1LoadIdentity();
+					if (minecraft->Settings->Anaglyph) { gl1Translatef(((i << 1) - 1) * 0.1, 0.0, 0.0); }
 					if (minecraft->Settings->ViewBobbing) { RendererApplyBobbing(renderer, delta); }
 					
-					glTranslatef(0.0, 0.0, -0.1);
+					gl1Translatef(0.0, 0.0, -0.1);
 					float2 rot = player->OldRotation + (player->Rotation - player->OldRotation) * delta;
-					glRotatef(rot.x, 1.0, 0.0, 0.0);
-					glRotatef(rot.y, 0.0, 1.0, 0.0);
+					gl1Rotatef(rot.x, 1.0, 0.0, 0.0);
+					gl1Rotatef(rot.y, 0.0, 1.0, 0.0);
 					float3 pos = player->OldPosition + (player->Position - player->OldPosition) * delta;
-					glTranslatef(-pos.x, -pos.y, -pos.z);
+					gl1Translatef(-pos.x, -pos.y, -pos.z);
 					
 					Frustum frustum = FrustumUpdate();
 					LevelRenderer lrenderer = minecraft->LevelRenderer;
@@ -599,7 +599,7 @@ void MinecraftRun(Minecraft minecraft)
 					}
 					
 					RendererUpdateFog(renderer);
-					glEnable(GL_FOG);
+					gl1Enable(GL1_FOG);
 					LevelRendererSortChunks(lrenderer, player, 0);
 					if (LevelIsSolidSearch(level, player->Position, 0.1))
 					{
@@ -614,17 +614,17 @@ void MinecraftRun(Minecraft minecraft)
 									BlockType tile = LevelGetTile(level, x, y, z);
 									if (tile != BlockTypeNone && BlockIsSolid(Blocks.Table[tile]))
 									{
-										glColor4f(0.2, 0.2, 0.2, 1.0);
-										glDepthFunc(GL_LESS);
+										gl1Color4f(0.2, 0.2, 0.2, 1.0);
+										gl1DepthFunc(GL1_LESS);
 										ShapeRendererBegin();
 										for (int j = 0; j < 6; j++) { BlockRenderInside(Blocks.Table[tile], v.x, v.y, v.z, j); }
 										ShapeRendererEnd();
-										glCullFace(GL_FRONT);
+										gl1CullFace(GL1_FRONT);
 										ShapeRendererBegin();
 										for (int j = 0; j < 6; j++) { BlockRenderInside(Blocks.Table[tile], v.x, v.y, v.z, j); }
 										ShapeRendererEnd();
-										glCullFace(GL_BACK);
-										glDepthFunc(GL_LEQUAL);
+										gl1CullFace(GL1_BACK);
+										gl1DepthFunc(GL1_LEQUAL);
 									}
 								}
 							}
@@ -647,7 +647,7 @@ void MinecraftRun(Minecraft minecraft)
 							int tex = 0;
 							if (j == 0) { tex = TextureManagerLoad(minecraft->TextureManager, "Particles.png"); }
 							if (j == 1) { tex = TextureManagerLoad(minecraft->TextureManager, "Terrain.png"); }
-							glBindTexture(GL_TEXTURE_2D, tex);
+							gl1BindTexture(GL1_TEXTURE_2D, tex);
 							ShapeRendererBegin();
 							for (int k = 0; k < ListCount(particles->Particles[j]); k++)
 							{
@@ -657,12 +657,12 @@ void MinecraftRun(Minecraft minecraft)
 						}
 					}
 					
-					glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Rock.png"));
-					glEnable(GL_TEXTURE_2D);
-					glCallList(lrenderer->ListID);
+					gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Rock.png"));
+					gl1Enable(GL1_TEXTURE_2D);
+					gl1CallList(lrenderer->ListID);
 					RendererUpdateFog(renderer);
-					glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Clouds.png"));
-					glColor4f(1.0, 1.0, 1.0, 1.0);
+					gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Clouds.png"));
+					gl1Color4f(1.0, 1.0, 1.0, 1.0);
 					float4 cloud = ColorToFloat4(level->CloudColor);
 					if (minecraft->Settings->Anaglyph)
 					{
@@ -688,7 +688,7 @@ void MinecraftRun(Minecraft minecraft)
 					}
 					ShapeRendererEnd();
 					
-					glDisable(GL_TEXTURE_2D);
+					gl1Disable(GL1_TEXTURE_2D);
 					ShapeRendererBegin();
 					sky = ColorToFloat4(level->SkyColor);
 					if (minecraft->Settings->Anaglyph)
@@ -708,115 +708,115 @@ void MinecraftRun(Minecraft minecraft)
 						}
 					}
 					ShapeRendererEnd();
-					glEnable(GL_TEXTURE_2D);
+					gl1Enable(GL1_TEXTURE_2D);
 					RendererUpdateFog(renderer);
 					
 					if (!minecraft->Selected.Null)
 					{
-						glDisable(GL_ALPHA_TEST);
+						gl1Disable(GL1_ALPHA_TEST);
 						MovingObjectPosition pos = minecraft->Selected;
-						glEnable(GL_BLEND);
-						glEnable(GL_ALPHA_TEST);
-						glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-						glColor4f(1.0, 1.0, 1.0, (tsin(TimeMilli() / 100.0) * 0.2 + 0.4) * 0.5);
+						gl1Enable(GL1_BLEND);
+						gl1Enable(GL1_ALPHA_TEST);
+						gl1BlendFunc(GL1_SRC_ALPHA, GL1_ONE);
+						gl1Color4f(1.0, 1.0, 1.0, (tsin(TimeMilli() / 100.0) * 0.2 + 0.4) * 0.5);
 						if (lrenderer->Cracks > 0.0)
 						{
-							glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
+							gl1BlendFunc(GL1_DST_COLOR, GL1_SRC_COLOR);
 							int tex = TextureManagerLoad(minecraft->TextureManager, "Terrain.png");
-							glBindTexture(GL_TEXTURE_2D, tex);
-							glColor4f(1.0, 1.0, 1.0, 0.5);
-							glPushMatrix();
+							gl1BindTexture(GL1_TEXTURE_2D, tex);
+							gl1Color4f(1.0, 1.0, 1.0, 0.5);
+							gl1PushMatrix();
 							Block block = Blocks.Table[LevelGetTile(level, pos.XYZ.x, pos.XYZ.y, pos.XYZ.z)];
 							float3 v = (block->XYZ0 + block->XYZ1) / 2.0;
-							glTranslatef(pos.XYZ.x + v.x, pos.XYZ.y + v.y, pos.XYZ.z + v.z);
-							glScalef(1.01, 1.01, 1.01);
-							glTranslatef(-(pos.XYZ.x + v.x), -(pos.XYZ.y + v.y), -(pos.XYZ.z + v.z));
+							gl1Translatef(pos.XYZ.x + v.x, pos.XYZ.y + v.y, pos.XYZ.z + v.z);
+							gl1Scalef(1.01, 1.01, 1.01);
+							gl1Translatef(-(pos.XYZ.x + v.x), -(pos.XYZ.y + v.y), -(pos.XYZ.z + v.z));
 							ShapeRendererBegin();
 							ShapeRendererNoColor();
-							glDepthMask(false);
+							gl1DepthMask(false);
 							if (block == NULL) { block = Blocks.Table[BlockTypeStone]; }
 							for (int j = 0; j < 6; j++) { BlockRenderSideWithTexture(block, pos.XYZ.x, pos.XYZ.y, pos.XYZ.z, j, 240 + (int)(lrenderer->Cracks * 10.0)); }
 							ShapeRendererEnd();
-							glDepthMask(true);
-							glPopMatrix();
+							gl1DepthMask(true);
+							gl1PopMatrix();
 						}
-						glDisable(GL_BLEND);
-						glDisable(GL_ALPHA_TEST);
-						glEnable(GL_BLEND);
-						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-						glColor4f(0.0, 0.0, 0.0, 0.4);
-						glLineWidth(2.0);
-						glDisable(GL_TEXTURE_2D);
-						glDepthMask(false);
+						gl1Disable(GL1_BLEND);
+						gl1Disable(GL1_ALPHA_TEST);
+						gl1Enable(GL1_BLEND);
+						gl1BlendFunc(GL1_SRC_ALPHA, GL1_ONE_MINUS_SRC_ALPHA);
+						gl1Color4f(0.0, 0.0, 0.0, 0.4);
+						gl1LineWidth(2.0);
+						gl1Disable(GL1_TEXTURE_2D);
+						gl1DepthMask(false);
 						BlockType tile = LevelGetTile(level, pos.XYZ.x, pos.XYZ.y, pos.XYZ.z);
 						if (tile > BlockTypeNone)
 						{
 							AABB aabb = AABBGrow(BlockGetSelectionAABB(Blocks.Table[tile], pos.XYZ.x, pos.XYZ.y, pos.XYZ.z), one3f * 0.002);
-							glBegin(GL_LINE_STRIP);
-							glVertex3f(aabb.V0.x, aabb.V0.y, aabb.V0.z);
-							glVertex3f(aabb.V1.x, aabb.V0.y, aabb.V0.z);
-							glVertex3f(aabb.V1.x, aabb.V0.y, aabb.V1.z);
-							glVertex3f(aabb.V0.x, aabb.V0.y, aabb.V1.z);
-							glVertex3f(aabb.V0.x, aabb.V0.y, aabb.V0.z);
-							glEnd();
-							glBegin(GL_LINE_STRIP);
-							glVertex3f(aabb.V0.x, aabb.V1.y, aabb.V0.z);
-							glVertex3f(aabb.V1.x, aabb.V1.y, aabb.V0.z);
-							glVertex3f(aabb.V1.x, aabb.V1.y, aabb.V1.z);
-							glVertex3f(aabb.V0.x, aabb.V1.y, aabb.V1.z);
-							glVertex3f(aabb.V0.x, aabb.V1.y, aabb.V0.z);
-							glEnd();
-							glBegin(GL_LINES);
-							glVertex3f(aabb.V0.x, aabb.V0.y, aabb.V0.z);
-							glVertex3f(aabb.V0.x, aabb.V1.y, aabb.V0.z);
-							glVertex3f(aabb.V1.x, aabb.V0.y, aabb.V0.z);
-							glVertex3f(aabb.V1.x, aabb.V1.y, aabb.V0.z);
-							glVertex3f(aabb.V1.x, aabb.V0.y, aabb.V1.z);
-							glVertex3f(aabb.V1.x, aabb.V1.y, aabb.V1.z);
-							glVertex3f(aabb.V0.x, aabb.V0.y, aabb.V1.z);
-							glVertex3f(aabb.V0.x, aabb.V1.y, aabb.V1.z);
-							glEnd();
+							gl1Begin(GL1_LINE_STRIP);
+							gl1Vertex3f(aabb.V0.x, aabb.V0.y, aabb.V0.z);
+							gl1Vertex3f(aabb.V1.x, aabb.V0.y, aabb.V0.z);
+							gl1Vertex3f(aabb.V1.x, aabb.V0.y, aabb.V1.z);
+							gl1Vertex3f(aabb.V0.x, aabb.V0.y, aabb.V1.z);
+							gl1Vertex3f(aabb.V0.x, aabb.V0.y, aabb.V0.z);
+							gl1End();
+							gl1Begin(GL1_LINE_STRIP);
+							gl1Vertex3f(aabb.V0.x, aabb.V1.y, aabb.V0.z);
+							gl1Vertex3f(aabb.V1.x, aabb.V1.y, aabb.V0.z);
+							gl1Vertex3f(aabb.V1.x, aabb.V1.y, aabb.V1.z);
+							gl1Vertex3f(aabb.V0.x, aabb.V1.y, aabb.V1.z);
+							gl1Vertex3f(aabb.V0.x, aabb.V1.y, aabb.V0.z);
+							gl1End();
+							gl1Begin(GL1_LINES);
+							gl1Vertex3f(aabb.V0.x, aabb.V0.y, aabb.V0.z);
+							gl1Vertex3f(aabb.V0.x, aabb.V1.y, aabb.V0.z);
+							gl1Vertex3f(aabb.V1.x, aabb.V0.y, aabb.V0.z);
+							gl1Vertex3f(aabb.V1.x, aabb.V1.y, aabb.V0.z);
+							gl1Vertex3f(aabb.V1.x, aabb.V0.y, aabb.V1.z);
+							gl1Vertex3f(aabb.V1.x, aabb.V1.y, aabb.V1.z);
+							gl1Vertex3f(aabb.V0.x, aabb.V0.y, aabb.V1.z);
+							gl1Vertex3f(aabb.V0.x, aabb.V1.y, aabb.V1.z);
+							gl1End();
 						}
-						glDepthMask(true);
-						glEnable(GL_TEXTURE_2D);
-						glDisable(GL_BLEND);
-						glEnable(GL_ALPHA_TEST);
+						gl1DepthMask(true);
+						gl1Enable(GL1_TEXTURE_2D);
+						gl1Disable(GL1_BLEND);
+						gl1Enable(GL1_ALPHA_TEST);
 					}
 					
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					gl1BlendFunc(GL1_SRC_ALPHA, GL1_ONE_MINUS_SRC_ALPHA);
 					RendererUpdateFog(renderer);
-					glEnable(GL_TEXTURE_2D);
-					glEnable(GL_BLEND);
-					glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Water.png"));
-					glCallList(lrenderer->ListID + 1);
-					glDisable(GL_BLEND);
-					glEnable(GL_BLEND);
-					glColorMask(false, false, false, false);
+					gl1Enable(GL1_TEXTURE_2D);
+					gl1Enable(GL1_BLEND);
+					gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Water.png"));
+					gl1CallList(lrenderer->ListID + 1);
+					gl1Disable(GL1_BLEND);
+					gl1Enable(GL1_BLEND);
+					gl1ColorMask(false, false, false, false);
 					int count = LevelRendererSortChunks(lrenderer, player, 1);
-					glColorMask(true, true, true, true);
+					gl1ColorMask(true, true, true, true);
 					if (minecraft->Settings->Anaglyph)
 					{
-						if (count == 0) { glColorMask(false, true, true, false); }
-						else { glColorMask(true, false, false, false); }
+						if (count == 0) { gl1ColorMask(false, true, true, false); }
+						else { gl1ColorMask(true, false, false, false); }
 					}
 					if (count > 0)
 					{
-						glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Terrain.png"));
-						glCallLists(count, GL_INT, lrenderer->ChunkDataCache);
+						gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Terrain.png"));
+						gl1CallLists(count, GL1_INT, lrenderer->ChunkDataCache);
 					}
 					
-					glDepthMask(true);
-					glDisable(GL_BLEND);
-					glDisable(GL_FOG);
+					gl1DepthMask(true);
+					gl1Disable(GL1_BLEND);
+					gl1Disable(GL1_FOG);
 					if (minecraft->Raining)
 					{
 						float t = delta;
 						int3 p = int3f(player->Position);
-						glDisable(GL_CULL_FACE);
-						glNormal3f(0.0, 1.0, 0.0);
-						glEnable(GL_BLEND);
-						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-						glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Rain.png"));
+						gl1Disable(GL1_CULL_FACE);
+						gl1Normal3f(0.0, 1.0, 0.0);
+						gl1Enable(GL1_BLEND);
+						gl1BlendFunc(GL1_SRC_ALPHA, GL1_ONE_MINUS_SRC_ALPHA);
+						gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Rain.png"));
 						for (int x = p.x - 5; x <= p.x + 5; x++)
 						{
 							for (int z = p.z - 5; z <= p.z + 5; z++)
@@ -830,7 +830,7 @@ void MinecraftRun(Minecraft minecraft)
 								{
 									float tt = (((lrenderer->Ticks + x * 3121 + z * 418711) % 32) + t) / 32.0;
 									float d = length2f((float2){ x, z } + 0.5 - player->Position.xz) / 5.0;
-									glColor4f(1.0, 1.0, 1.0, (1.0 - d * d) * 0.7);
+									gl1Color4f(1.0, 1.0, 1.0, (1.0 - d * d) * 0.7);
 									ShapeRendererBegin();
 									ShapeRendererVertexUV((float3){ x, ymin, z }, (float2){ 0.0, ymin / 4.0 + tt * 2.0 });
 									ShapeRendererVertexUV((float3){ x + 1, ymin, z + 1 }, (float2){ 2.0, ymin / 4.0 + tt * 2.0 });
@@ -844,48 +844,48 @@ void MinecraftRun(Minecraft minecraft)
 								}
 							}
 						}
-						glEnable(GL_CULL_FACE);
-						glDisable(GL_BLEND);
+						gl1Enable(GL1_CULL_FACE);
+						gl1Disable(GL1_BLEND);
 					}
 					
-					glClear(GL_DEPTH_BUFFER_BIT);
-					glLoadIdentity();
-					if (minecraft->Settings->Anaglyph) { glTranslatef(((i << 1) - 1) * 0.1, 0.0, 0.0); }
+					gl1Clear(GL1_DEPTH_BUFFER_BIT);
+					gl1LoadIdentity();
+					if (minecraft->Settings->Anaglyph) { gl1Translatef(((i << 1) - 1) * 0.1, 0.0, 0.0); }
 					if (minecraft->Settings->ViewBobbing) { RendererApplyBobbing(renderer, delta); }
 					
 					HeldBlock held = renderer->HeldBlock;
 					float heldPos = held.LastPosition + (held.Position - held.LastPosition) * delta;
-					glPushMatrix();
-					glRotatef(rot.x, 1.0, 0.0, 0.0);
-					glRotatef(rot.y, 0.0, 1.0, 0.0);
+					gl1PushMatrix();
+					gl1Rotatef(rot.x, 1.0, 0.0, 0.0);
+					gl1Rotatef(rot.y, 0.0, 1.0, 0.0);
 					RendererSetLighting(renderer, true);
-					glPopMatrix();
-					glPushMatrix();
+					gl1PopMatrix();
+					gl1PushMatrix();
 					if (held.Moving)
 					{
 						float a = (held.Offset + delta) / 7.0;
-						glTranslatef(-tsin(sqrt(a) * pi) * 0.4, tsin(sqrt(a) * pi * 2.0) * 0.2, -tsin(a * pi) * 0.2);
+						gl1Translatef(-tsin(sqrt(a) * pi) * 0.4, tsin(sqrt(a) * pi * 2.0) * 0.2, -tsin(a * pi) * 0.2);
 					}
-					glTranslatef(0.7 * 0.8, -0.65 * 0.8 - (1.0 - heldPos) * 0.6, -0.9 * 0.8);
-					glRotatef(45.0, 0.0, 1.0, 0.0);
-					glEnable(GL_NORMALIZE);
+					gl1Translatef(0.7 * 0.8, -0.65 * 0.8 - (1.0 - heldPos) * 0.6, -0.9 * 0.8);
+					gl1Rotatef(45.0, 0.0, 1.0, 0.0);
+					gl1Enable(GL1_NORMALIZE);
 					if (held.Moving)
 					{
 						float a = (held.Offset + delta) / 7.0;
-						glRotatef(tsin(sqrt(a) * pi) * 80.0, 0.0, 1.0, 0.0);
-						glRotatef(-tsin(a * a * pi), 1.0, 0.0, 0.0);
+						gl1Rotatef(tsin(sqrt(a) * pi) * 80.0, 0.0, 1.0, 0.0);
+						gl1Rotatef(-tsin(a * a * pi), 1.0, 0.0, 0.0);
 					}
 					float brightness = LevelGetBrightness(level, player->Position.x, player->Position.y, player->Position.z);
-					glColor4f(brightness, brightness, brightness, 1.0);
+					gl1Color4f(brightness, brightness, brightness, 1.0);
 					if (held.Block != NULL)
 					{
-						glScalef(0.4, 0.4, 0.4);
-						glTranslatef(-0.5, -0.5, -0.5);
-						glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Terrain.png"));
+						gl1Scalef(0.4, 0.4, 0.4);
+						gl1Translatef(-0.5, -0.5, -0.5);
+						gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(minecraft->TextureManager, "Terrain.png"));
 						BlockRenderPreview(held.Block);
 					}
-					glDisable(GL_NORMALIZE);
-					glPopMatrix();
+					gl1Disable(GL1_NORMALIZE);
+					gl1PopMatrix();
 					RendererSetLighting(renderer, false);
 					
 					if (!minecraft->Settings->Anaglyph) { break; }
@@ -895,13 +895,13 @@ void MinecraftRun(Minecraft minecraft)
 			}
 			else
 			{
-				glViewport(0, 0, minecraft->FrameWidth, minecraft->FrameHeight);
-				glClearColor(0.0, 0.0, 0.0, 0.0);
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				glMatrixMode(GL_PROJECTION);
-				glLoadIdentity();
-				glMatrixMode(GL_MODELVIEW);
-				glLoadIdentity();
+				gl1Viewport(0, 0, minecraft->FrameWidth, minecraft->FrameHeight);
+				gl1ClearColor(0.0, 0.0, 0.0, 0.0);
+				gl1Clear(GL1_COLOR_BUFFER_BIT | GL1_DEPTH_BUFFER_BIT);
+				gl1MatrixMode(GL1_PROJECTION);
+				gl1LoadIdentity();
+				gl1MatrixMode(GL1_MODELVIEW);
+				gl1LoadIdentity();
 				RendererEnableGUIMode(renderer);
 			}
 			

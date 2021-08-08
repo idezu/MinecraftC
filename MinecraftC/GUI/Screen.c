@@ -5,37 +5,37 @@
 void ScreenDrawBox(int2 v0, int2 v1, Color color)
 {
 	float4 col = ColorToFloat4(color);
-	glEnable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor4f(col.r, col.g, col.b, col.a);
+	gl1Enable(GL1_BLEND);
+	gl1Disable(GL1_TEXTURE_2D);
+	gl1BlendFunc(GL1_SRC_ALPHA, GL1_ONE_MINUS_SRC_ALPHA);
+	gl1Color4f(col.r, col.g, col.b, col.a);
 	ShapeRendererBegin();
 	ShapeRendererVertex((float3){ v0.x, v1.y, 0.0 });
 	ShapeRendererVertex((float3){ v1.x, v1.y, 0.0 });
 	ShapeRendererVertex((float3){ v1.x, v0.y, 0.0 });
 	ShapeRendererVertex((float3){ v0.x, v0.y, 0.0 });
 	ShapeRendererEnd();
-	glEnable(GL_TEXTURE_2D);
-	glDisable(GL_BLEND);
+	gl1Enable(GL1_TEXTURE_2D);
+	gl1Disable(GL1_BLEND);
 }
 
 void ScreenDrawFadingBox(int2 v0, int2 v1, Color col0, Color col1)
 {
 	float4 c0 = ColorToFloat4(col0);
 	float4 c1 = ColorToFloat4(col1);
-	glEnable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBegin(GL_QUADS);
-	glColor4f(c0.r, c0.g, c0.b, c0.a);
-	glVertex2f(v1.x, v0.y);
-	glVertex2f(v0.x, v0.y);
-	glColor4f(c1.r, c1.g, c1.b, c1.a);
-	glVertex2f(v0.x, v1.y);
-	glVertex2f(v1.x, v1.y);
-	glEnd();
-	glEnable(GL_TEXTURE_2D);
-	glDisable(GL_BLEND);
+	gl1Enable(GL1_BLEND);
+	gl1Disable(GL1_TEXTURE_2D);
+	gl1BlendFunc(GL1_SRC_ALPHA, GL1_ONE_MINUS_SRC_ALPHA);
+	gl1Begin(GL1_QUADS);
+	gl1Color4f(c0.r, c0.g, c0.b, c0.a);
+	gl1Vertex2f(v1.x, v0.y);
+	gl1Vertex2f(v0.x, v0.y);
+	gl1Color4f(c1.r, c1.g, c1.b, c1.a);
+	gl1Vertex2f(v0.x, v1.y);
+	gl1Vertex2f(v1.x, v1.y);
+	gl1End();
+	gl1Enable(GL1_TEXTURE_2D);
+	gl1Disable(GL1_BLEND);
 }
 
 void ScreenDrawCenteredString(FontRenderer font, char * str, int2 pos, Color color)
