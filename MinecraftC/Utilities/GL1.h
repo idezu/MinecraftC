@@ -494,6 +494,48 @@
 #define GL1_POLYGON_OFFSET_LINE            0x2A02
 #define GL1_POLYGON_OFFSET_FILL            0x8037
 
+#define GL1_ALPHA4                         0x803B
+#define GL1_ALPHA8                         0x803C
+#define GL1_ALPHA12                        0x803D
+#define GL1_ALPHA16                        0x803E
+#define GL1_LUMINANCE4                     0x803F
+#define GL1_LUMINANCE8                     0x8040
+#define GL1_LUMINANCE12                    0x8041
+#define GL1_LUMINANCE16                    0x8042
+#define GL1_LUMINANCE4_ALPHA4              0x8043
+#define GL1_LUMINANCE6_ALPHA2              0x8044
+#define GL1_LUMINANCE8_ALPHA8              0x8045
+#define GL1_LUMINANCE12_ALPHA4             0x8046
+#define GL1_LUMINANCE12_ALPHA12            0x8047
+#define GL1_LUMINANCE16_ALPHA16            0x8048
+#define GL1_INTENSITY                      0x8049
+#define GL1_INTENSITY4                     0x804A
+#define GL1_INTENSITY8                     0x804B
+#define GL1_INTENSITY12                    0x804C
+#define GL1_INTENSITY16                    0x804D
+#define GL1_R3_G3_B2                       0x2A10
+#define GL1_RGB4                           0x804F
+#define GL1_RGB5                           0x8050
+#define GL1_RGB8                           0x8051
+#define GL1_RGB10                          0x8052
+#define GL1_RGB12                          0x8053
+#define GL1_RGB16                          0x8054
+#define GL1_RGBA2                          0x8055
+#define GL1_RGBA4                          0x8056
+#define GL1_RGB5_A1                        0x8057
+#define GL1_RGBA8                          0x8058
+#define GL1_RGB10_A2                       0x8059
+#define GL1_RGBA12                         0x805A
+#define GL1_RGBA16                         0x805B
+#define GL1_TEXTURE_RED_SIZE               0x805C
+#define GL1_TEXTURE_GREEN_SIZE             0x805D
+#define GL1_TEXTURE_BLUE_SIZE              0x805E
+#define GL1_TEXTURE_ALPHA_SIZE             0x805F
+#define GL1_TEXTURE_LUMINANCE_SIZE         0x8060
+#define GL1_TEXTURE_INTENSITY_SIZE         0x8061
+#define GL1_PROXY_TEXTURE_1D               0x8063
+#define GL1_PROXY_TEXTURE_2D               0x8064
+
 #define GL1_VERTEX_ARRAY                   0x8074
 #define GL1_NORMAL_ARRAY                   0x8075
 #define GL1_COLOR_ARRAY                    0x8076
@@ -691,9 +733,6 @@ void gl1GetTexGeniv(GL1enum coord, GL1enum pname, GL1int * params);
 
 void gl1GetTexImage(GL1enum target, GL1int level, GL1enum format, GL1enum type, GL1void * pixels);
 
-void gl1GetTexLevelParameterfv(GL1enum target, GL1int level, GL1enum pname, GL1float * params);
-void gl1GetTexLevelParameteriv(GL1enum target, GL1int level, GL1enum pname, GL1int * params);
-
 void gl1GetTexParameterfv(GL1enum target, GL1enum pname, GL1float * params);
 void gl1GetTexParameteriv(GL1enum target, GL1enum pname, GL1int * params);
 
@@ -861,10 +900,7 @@ void gl1TexImage1D(GL1enum target, GL1int level, GL1int internalformat, GL1sizei
 
 void gl1TexImage2D(GL1enum target, GL1int level, GL1int internalformat, GL1sizei width, GL1sizei height, GL1int border, GL1enum format, GL1enum type, const GL1void * pixels);
 
-void gl1TexParameterf(GL1enum target, GL1enum pname, GL1float param);
 void gl1TexParameteri(GL1enum target, GL1enum pname, GL1int param);
-void gl1TexParameterfv(GL1enum target, GL1enum pname, const GL1float * params);
-void gl1TexParameteriv(GL1enum target, GL1enum pname, const GL1int * params);
 
 void gl1TexSubImage1D(GL1enum target, GL1int level, GL1int xoffset, GL1sizei width, GL1enum format, GL1enum type, const GL1void * pixels);
 
