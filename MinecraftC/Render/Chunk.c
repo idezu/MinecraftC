@@ -1,7 +1,7 @@
-#include <OpenGL.h>
 #include "Chunk.h"
 #include "ShapeRenderer.h"
 #include "../Utilities/Log.h"
+#include "../Utilities/OpenGL.h"
 
 int ChunkUpdates = 0;
 
@@ -33,7 +33,7 @@ void ChunkUpdate(Chunk chunk)
 	{
 		bool b0 = false;
 		bool b1 = false;
-		glNewList(chunk->BaseListID + i, GL_COMPILE);
+		gl1NewList(chunk->BaseListID + i, GL1_COMPILE);
 		ShapeRendererBegin();
 		for (int x = v0.x; x < v1.x; x++)
 		{
@@ -52,7 +52,7 @@ void ChunkUpdate(Chunk chunk)
 			}
 		}
 		ShapeRendererEnd();
-		glEndList();
+		gl1EndList();
 		if (b1) { chunk->Dirty[i] = false; }
 		if (!b0) { break; }
 	}

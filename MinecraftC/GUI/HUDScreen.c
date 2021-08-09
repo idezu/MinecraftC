@@ -1,10 +1,10 @@
-#include <OpenGL.h>
 #include "HUDScreen.h"
 #include "Screen.h"
 #include "../Minecraft.h"
 #include "../Render/ShapeRenderer.h"
 #include "../Utilities/Time.h"
 #include "../Utilities/SinTable.h"
+#include "../Utilities/OpenGL.h"
 
 HUDScreen HUDScreenCreate(struct Minecraft * minecraft, int width, int height)
 {
@@ -26,15 +26,15 @@ void HUDScreenRender(HUDScreen hud, float var1, bool var2, int2 mousePos)
 {
 	PlayerData player = hud->Minecraft->Player->TypeData;
 	RendererEnableGUIMode(hud->Minecraft->Renderer);
-	glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(hud->Minecraft->TextureManager, "GUI/GUI.png"));
-	glColor4f(1.0, 1.0, 1.0, 1.0);
-	glEnable(GL_BLEND);
+	gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(hud->Minecraft->TextureManager, "GUI/GUI.png"));
+	gl1Color4f(1.0, 1.0, 1.0, 1.0);
+	gl1Enable(GL1_BLEND);
 	ScreenDrawImage((int2){ hud->Width / 2 - 91, hud->Height - 22 }, (int2){ 0, 0 }, (int2){ 182, 22 }, -90.0);
 	ScreenDrawImage((int2){ hud->Width / 2 - 92 + player->Inventory->Selected * 20, hud->Height - 23 }, (int2){ 0, 22 }, (int2){ 24, 22 }, -90.0);
-	glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(hud->Minecraft->TextureManager, "GUI/Icons.png"));
+	gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(hud->Minecraft->TextureManager, "GUI/Icons.png"));
 	ScreenDrawImage((int2){ hud->Width / 2 - 7, hud->Height / 2 - 7 }, (int2){ 0, 0 }, (int2){ 16, 16 }, -90.0);
 	
-	glDisable(GL_BLEND);
+	gl1Disable(GL1_BLEND);
 	for (int i = 0; i < 9; i++)
 	{
 		int x = hud->Width / 2 - 90 + i * 20;
@@ -42,29 +42,29 @@ void HUDScreenRender(HUDScreen hud, float var1, bool var2, int2 mousePos)
 		BlockType tile = player->Inventory->Slots[i];
 		if (tile != -1 && tile != 0)
 		{
-			glPushMatrix();
-			glTranslatef(x, y, -50.0);
+			gl1PushMatrix();
+			gl1Translatef(x, y, -50.0);
 			if (player->Inventory->PopTime[i] > 0)
 			{
 				float f1 = (player->Inventory->PopTime[i] - var1) / 5.0;
 				float f2 = -tsin(f1 * f1 * pi) * 8.0;
 				float f3 = tsin(f1 * f1 * pi) + 1.0;
 				float f4 = tsin(f1 * pi) + 1.0;
-				glTranslatef(10.0, f2 + 10.0, 0.0);
-				glScalef(f3, f4, 1.0);
-				glTranslatef(-10.0, -10.0, 0.0);
+				gl1Translatef(10.0, f2 + 10.0, 0.0);
+				gl1Scalef(f3, f4, 1.0);
+				gl1Translatef(-10.0, -10.0, 0.0);
 			}
-			glScalef(10.0, 10.0, 10.0);
-			glTranslatef(1.0, 0.5, 0.0);
-			glRotatef(-30.0, 1.0, 0.0, 0.0);
-			glRotatef(45.0, 0.0, 1.0, 0.0);
-			glTranslatef(-1.5, 0.5, 0.5);
-			glScalef(-1.0, -1.0, -1.0);
-			glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(hud->Minecraft->TextureManager, "Terrain.png"));
+			gl1Scalef(10.0, 10.0, 10.0);
+			gl1Translatef(1.0, 0.5, 0.0);
+			gl1Rotatef(-30.0, 1.0, 0.0, 0.0);
+			gl1Rotatef(45.0, 0.0, 1.0, 0.0);
+			gl1Translatef(-1.5, 0.5, 0.5);
+			gl1Scalef(-1.0, -1.0, -1.0);
+			gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(hud->Minecraft->TextureManager, "Terrain.png"));
 			ShapeRendererBegin();
 			BlockRenderFullBrightness(Blocks.Table[tile]);
 			ShapeRendererEnd();
-			glPopMatrix();
+			gl1PopMatrix();
 			if (player->Inventory->Count[i] > 1)
 			{
 				String string = StringCreateFromInt(player->Inventory->Count[i]);

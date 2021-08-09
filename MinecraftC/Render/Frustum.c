@@ -1,5 +1,5 @@
-#include <OpenGL.h>
 #include "Frustum.h"
+#include "../Utilities/OpenGL.h"
 
 static void Normalize(Frustum * frustum, int plane)
 {
@@ -10,8 +10,8 @@ static void Normalize(Frustum * frustum, int plane)
 Frustum FrustumUpdate()
 {
 	Frustum frustum = { 0 };
-	glGetFloatv(GL_PROJECTION_MATRIX, frustum.Projection);
-	glGetFloatv(GL_MODELVIEW_MATRIX, frustum.ModelView);
+	gl1GetFloatv(GL1_PROJECTION_MATRIX, frustum.Projection);
+	gl1GetFloatv(GL1_MODELVIEW_MATRIX, frustum.ModelView);
 	frustum.Clip[0x0] = frustum.ModelView[0x0] * frustum.Projection[0x0] + frustum.ModelView[0x1] * frustum.Projection[0x4] + frustum.ModelView[0x2] * frustum.Projection[0x8] + frustum.ModelView[0x3] * frustum.Projection[0xC];
 	frustum.Clip[0x1] = frustum.ModelView[0x0] * frustum.Projection[0x1] + frustum.ModelView[0x1] * frustum.Projection[0x5] + frustum.ModelView[0x2] * frustum.Projection[0x9] + frustum.ModelView[0x3] * frustum.Projection[0xD];
 	frustum.Clip[0x2] = frustum.ModelView[0x0] * frustum.Projection[0x2] + frustum.ModelView[0x1] * frustum.Projection[0x6] + frustum.ModelView[0x2] * frustum.Projection[0xA] + frustum.ModelView[0x3] * frustum.Projection[0xE];

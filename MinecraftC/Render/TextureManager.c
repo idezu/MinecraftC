@@ -1,8 +1,18 @@
 #include <string.h>
-#include <OpenGL.h>
-#include <stb_image.h>
 #include "TextureManager.h"
 #include "../Utilities/Log.h"
+#include "../Utilities/OpenGL.h"
+
+#include "../../Resources/GUI/GUI.h"
+#include "../../Resources/GUI/Icons.h"
+#include "../../Resources/Clouds.h"
+#include "../../Resources/Default.h"
+#include "../../Resources/Dirt.h"
+#include "../../Resources/Particles.h"
+#include "../../Resources/Rain.h"
+#include "../../Resources/Rock.h"
+#include "../../Resources/Terrain.h"
+#include "../../Resources/Water.h"
 
 TextureManager TextureManagerCreate(GameSettings settings)
 {
@@ -28,34 +38,37 @@ int TextureManagerLoad(TextureManager manager, char * resource)
 	}
 	if (loaded) { return manager->Textures[index]; }
 	
-	SDL_RWops * file = SDL_RWFromFile(resource, "rb");
-	if (file == NULL) { LogFatal("Fialed to open file %s: %s\n", resource, SDL_GetError()); }
-	int fileSize = (int)SDL_RWseek(file, 0, RW_SEEK_END);
-	SDL_RWseek(file, 0, RW_SEEK_SET);
-	void * fileData = MemoryAllocate(fileSize);
-	SDL_RWread(file, fileData, fileSize, 1);
-	SDL_RWclose(file);
+	int width = 0, height = 0;
+	uint8_t * p = NULL;
+	if (strcmp(resource, "Clouds.png") == 0) { p = Resource_Clouds_RGBA; width = Resource_Clouds_Width; height = Resource_Clouds_Height; }
+	if (strcmp(resource, "Default.png") == 0) { p = Resource_Default_RGBA; width = Resource_Default_Width; height = Resource_Default_Height; }
+	if (strcmp(resource, "Dirt.png") == 0) { p = Resource_Dirt_RGBA; width = Resource_Dirt_Width; height = Resource_Dirt_Height; }
+	if (strcmp(resource, "Particles.png") == 0) { p = Resource_Particles_RGBA; width = Resource_Particles_Width; height = Resource_Particles_Height; }
+	if (strcmp(resource, "Rain.png") == 0) { p = Resource_Rain_RGBA; width = Resource_Rain_Width; height = Resource_Rain_Height; }
+	if (strcmp(resource, "Rock.png") == 0) { p = Resource_Rock_RGBA; width = Resource_Rock_Width; height = Resource_Rock_Height; }
+	if (strcmp(resource, "Terrain.png") == 0) { p = Resource_Terrain_RGBA; width = Resource_Terrain_Width; height = Resource_Terrain_Height; }
+	if (strcmp(resource, "Water.png") == 0) { p = Resource_Water_RGBA; width = Resource_Water_Width; height = Resource_Water_Height; }
+	if (strcmp(resource, "GUI/GUI.png") == 0) { p = Resource_GUI_GUI_RGBA; width = Resource_GUI_GUI_Width; height = Resource_GUI_GUI_Height; }
+	if (strcmp(resource, "GUI/Icons.png") == 0) { p = Resource_GUI_Icons_RGBA; width = Resource_GUI_Icons_Width; height = Resource_GUI_Icons_Height; }
+	if (p == NULL) { LogFatal("Failed to load image %s.\n", resource); }
 	
-	int width, height, channels;
-	unsigned char * p = stbi_load_from_memory(fileData, fileSize, &width, &height, &channels, 4);
-	if (p == NULL) { LogFatal("Failed to open file %s: %s\n", resource, stbi_failure_reason()); }
-	MemoryFree(fileData);
-	
+	uint8_t * pixels = malloc(4 * width * height);
 	if (manager->Settings->Anaglyph)
 	{
 		for (int i = 0; i < 4 * width * height; i += 4)
 		{
 			Color color = { (p[i + 0] * 30 + p[i + 1] * 59 + p[i + 2] * 11) / 100, (p[i + 0] * 30 + p[i + 1] * 70) / 100, (p[i + 0] * 30 + p[i + 2] * 70) / 100, p[i + 3] };
-			memcpy(p + i, &color, sizeof(Color));
+			memcpy(pixels + i, &color, sizeof(Color));
 		}
 	}
+	else { memcpy(pixels, p, 4 * width * height); }
 	
-	glGenTextures(1, &manager->IDBuffer);
-	glBindTexture(GL_TEXTURE_2D, manager->IDBuffer);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, p);
-	stbi_image_free(p);
+	gl1GenTextures(1, &manager->IDBuffer);
+	gl1BindTexture(GL1_TEXTURE_2D, manager->IDBuffer);
+	gl1TexParameteri(GL1_TEXTURE_2D, GL1_TEXTURE_MIN_FILTER, GL1_NEAREST);
+	gl1TexParameteri(GL1_TEXTURE_2D, GL1_TEXTURE_MAG_FILTER, GL1_NEAREST);
+	gl1TexImage2D(GL1_TEXTURE_2D, 0, GL1_RGBA, width, height, 0, GL1_RGBA, GL1_UNSIGNED_BYTE, pixels);
+	free(pixels);
 	
 	manager->TextureNames = ListPush(manager->TextureNames, &resource);
 	manager->Textures = ListPush(manager->Textures, &manager->IDBuffer);
@@ -64,7 +77,7 @@ int TextureManagerLoad(TextureManager manager, char * resource)
 
 void TextureManagerReload(TextureManager manager)
 {
-	for (int i = 0; i < ListCount(manager->Textures); i++) { glDeleteTextures(1, &manager->Textures[i]); }
+	for (int i = 0; i < ListCount(manager->Textures); i++) { gl1DeleteTextures(1, &manager->Textures[i]); }
 	manager->Textures = ListClear(manager->Textures);
 	manager->TextureNames = ListClear(manager->TextureNames);
 }

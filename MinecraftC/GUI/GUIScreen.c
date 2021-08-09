@@ -1,4 +1,3 @@
-#include <OpenGL.h>
 #include "GUIScreen.h"
 #include "Screen.h"
 #include "BlockSelectScreen.h"
@@ -12,6 +11,7 @@
 #include "PauseScreen.h"
 #include "SaveLevelScreen.h"
 #include "../Minecraft.h"
+#include "../Utilities/OpenGL.h"
 
 GUIScreen GUIScreenCreate()
 {
@@ -42,8 +42,8 @@ void GUIScreenRender(GUIScreen screen, int2 m)
 		Button button = screen->Buttons[i];
 		if (button->Visible)
 		{
-			glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(screen->Minecraft->TextureManager, "GUI/GUI.png"));
-			glColor4f(1.0, 1.0, 1.0, 1.0);
+			gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(screen->Minecraft->TextureManager, "GUI/GUI.png"));
+			gl1Color4f(1.0, 1.0, 1.0, 1.0);
 			bool hovered = m.x >= button->Position.x && m.y >= button->Position.y && m.x < button->Position.x + button->Size.x && m.y < button->Position.y + button->Size.y;
 			int state = 1;
 			if (!button->Active) { state = 0; }

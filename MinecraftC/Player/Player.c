@@ -1,6 +1,6 @@
-#include <OpenGL.h>
 #include "Player.h"
 #include "PlayerAI.h"
+#include "../Utilities/OpenGL.h"
 
 Player PlayerCreate(Level level)
 {
@@ -155,17 +155,6 @@ bool PlayerAddResource(Player player, BlockType resource)
 {
 	PlayerData this = player->TypeData;
 	return InventoryAddResource(this->Inventory, resource);
-}
-
-void PlayerBindTexture(Player player, TextureManager textures)
-{
-	//if (PlayerNewTexture != NULL)
-	//{
-	//	PlayerNewTextureID = TextureManagerLoad(textures, PlayerNewTexture);
-	//	PlayerNewTexture = NULL;
-	//}
-	
-	gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(textures, "Char.png"));
 }
 
 void PlayerDestroy(Player player)

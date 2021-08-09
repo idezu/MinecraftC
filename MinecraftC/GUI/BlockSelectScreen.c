@@ -1,10 +1,10 @@
-#include <OpenGL.h>
 #include "BlockSelectScreen.h"
 #include "Screen.h"
 #include "../SessionData.h"
 #include "../Minecraft.h"
 #include "../Level/Tile/Block.h"
 #include "../Render/ShapeRenderer.h"
+#include "../Utilities/OpenGL.h"
 
 BlockSelectScreen BlockSelectScreenCreate()
 {
@@ -37,25 +37,25 @@ void BlockSelectScreenRender(BlockSelectScreen screen, int2 mouse)
 	}
 	ScreenDrawCenteredString(screen->Font, "Select block", (int2){ screen->Width / 2, 40 }, ColorWhite);
 	
-	glBindTexture(GL_TEXTURE_2D, TextureManagerLoad(screen->Minecraft->TextureManager, "Terrain.png"));
+	gl1BindTexture(GL1_TEXTURE_2D, TextureManagerLoad(screen->Minecraft->TextureManager, "Terrain.png"));
 	for (int i = 0; i < ListCount(SessionDataAllowedBlocks); i++)
 	{
 		Block block = SessionDataAllowedBlocks[i];
-		glPushMatrix();
+		gl1PushMatrix();
 		int x = screen->Width / 2 + i % 9 * 24 + -108;
 		int y = screen->Height / 2 + i / 9 * 24 + -60;
-		glTranslatef(x, y, 0.0);
-		glScalef(10.0, 10.0, 10.0);
-		glTranslatef(1.0, 0.5, 8.0);
-		glRotatef(-30.0, 1.0, 0.0, 0.0);
-		glRotatef(45.0, 0.0, 1.0, 0.0);
-		if (blockNum == i) { glScalef(1.6, 1.6, 1.6); }
-		glTranslatef(-1.5, 0.5, 0.5);
-		glScalef(-1.0, -1.0, -1.0);
+		gl1Translatef(x, y, 0.0);
+		gl1Scalef(10.0, 10.0, 10.0);
+		gl1Translatef(1.0, 0.5, 8.0);
+		gl1Rotatef(-30.0, 1.0, 0.0, 0.0);
+		gl1Rotatef(45.0, 0.0, 1.0, 0.0);
+		if (blockNum == i) { gl1Scalef(1.6, 1.6, 1.6); }
+		gl1Translatef(-1.5, 0.5, 0.5);
+		gl1Scalef(-1.0, -1.0, -1.0);
 		ShapeRendererBegin();
 		BlockRenderFullBrightness(block);
 		ShapeRendererEnd();
-		glPopMatrix();
+		gl1PopMatrix();
 	}
 }
 
