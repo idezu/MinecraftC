@@ -7,25 +7,13 @@ LevelIO LevelIOCreate(ProgressBarDisplay progress)
 	return levelIO;
 }
 
-bool LevelIOSave(LevelIO levelIO, Level level, SDL_RWops * output)
+bool LevelIOSave(LevelIO levelIO, Level level, char * file, char * levelName)
 {
 	ProgressBarDisplaySetText(levelIO->ProgressBar, "Failed!");
 	return false;
 }
 
-Level LevelIOLoad(LevelIO levelIO, SDL_RWops * input)
-{
-	ProgressBarDisplaySetText(levelIO->ProgressBar, "Failed!");
-	return NULL;
-}
-
-bool LevelIOSaveOnline(LevelIO levelIO, Level level, char * host, char * userName, char * sessionID, char * levelName, int id)
-{
-	ProgressBarDisplaySetText(levelIO->ProgressBar, "Failed!");
-	return false;
-}
-
-Level LevelIOLoadOnline(LevelIO levelIO, char * url, char * user, int id)
+Level LevelIOLoad(LevelIO levelIO, char * file)
 {
 	ProgressBarDisplaySetText(levelIO->ProgressBar, "Failed!");
 	return NULL;

@@ -66,6 +66,5 @@ void MinecraftGrabMouse(Minecraft minecraft);
 void MinecraftPause(Minecraft minecraft);
 bool MinecraftIsOnline(Minecraft minecraft);
 void MinecraftGenerateLevel(Minecraft minecraft, int size);
-bool MinecraftLoadOnlineLevel(Minecraft minecraft, char * username, int userID);
 void MinecraftSetLevel(Minecraft minecraft, Level level);
 void MinecraftDestroy(Minecraft minecraft);

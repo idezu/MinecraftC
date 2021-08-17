@@ -13,7 +13,8 @@ LevelNameScreen LevelNameScreenCreate(GUIScreen parent, char * name, int id)
 	this->Counter = 0;
 	this->Parent = parent;
 	this->Name = StringCreate(name);
-	if (strcmp(name, "-") == 0) { this->Name = StringSet(this->Name, ""); }
+	this->ID = id;
+	if (strcmp(name, "---") == 0) { this->Name = StringSet(this->Name, ""); }
 	return screen;
 }
 
@@ -22,15 +23,13 @@ void LevelNameScreenOnOpen(LevelNameScreen screen)
 	LevelNameScreenData this = screen->TypeData;
 	for (int i = 0; i < ListCount(screen->Buttons); i++) { ButtonDestroy(screen->Buttons[i]); }
 	screen->Buttons = ListClear(screen->Buttons);
-	//Keyboard.enableRepeatEvents(true);
 	screen->Buttons = ListPush(screen->Buttons, &(Button){ ButtonCreate(0, screen->Width / 2 - 100, screen->Height / 4 + 120, "Save") });
-	screen->Buttons = ListPush(screen->Buttons, &(Button){ ButtonCreate(0, screen->Width / 2 - 100, screen->Height / 4 + 144, "Cancel") });
+	screen->Buttons = ListPush(screen->Buttons, &(Button){ ButtonCreate(1, screen->Width / 2 - 100, screen->Height / 4 + 144, "Cancel") });
 	screen->Buttons[0]->Active = StringLength(this->Name) > 0;
 }
 
 void LevelNameScreenOnClose(LevelNameScreen screen)
 {
-	//Keyboard.enableRepeatEvents(false);
 }
 
 void LevelNameScreenTick(LevelNameScreen screen)
@@ -56,7 +55,7 @@ void LevelNameScreenRender(LevelNameScreen screen, int2 mousePos)
 void LevelNameScreenOnKeyPressed(LevelNameScreen screen, char eventChar, int eventKey)
 {
 	LevelNameScreenData this = screen->TypeData;
-	if (eventKey == 14 && StringLength(this->Name) > 0) { this->Name = StringSub(this->Name, 0, StringLength(this->Name) - 1); }
+	if (eventKey == SDL_SCANCODE_BACKSPACE && StringLength(this->Name) > 0) { this->Name = StringSub(this->Name, 0, StringLength(this->Name) - 1); }
 	
 	String allowedChars = StringCreate("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ,.:-_\'*!\"#%/()=+?[]{}<>");
 	if (StringIndexOf(allowedChars, eventChar) >= 0 && StringLength(this->Name) < 64)
@@ -74,7 +73,9 @@ void LevelNameScreenOnButtonClicked(LevelNameScreen screen, Button button)
 	{
 		if (button->ID == 0 && StringLength(this->Name) > 0)
 		{
-			LevelIOSaveOnline(screen->Minecraft->LevelIO, screen->Minecraft->Level, screen->Minecraft->Host, screen->Minecraft->Session->UserName, screen->Minecraft->Session->SessionID, this->Name, this->ID);
+			String filePath = StringConcatFront(screen->Minecraft->WorkingDirectory, StringConcat(StringConcatFront("Saves/Level", StringCreateFromInt(this->ID)), ".dat"));
+			LevelIOSave(screen->Minecraft->LevelIO, screen->Minecraft->Level, filePath, this->Name);
+			StringDestroy(filePath);
 			MinecraftSetCurrentScreen(screen->Minecraft, NULL);
 			MinecraftGrabMouse(screen->Minecraft);
 		}

@@ -9,8 +9,6 @@ typedef struct LevelIO
 } * LevelIO;
 
 LevelIO LevelIOCreate(ProgressBarDisplay progress);
-bool LevelIOSave(LevelIO levelIO, Level level, SDL_RWops * output);
-Level LevelIOLoad(LevelIO levelIO, SDL_RWops * input);
-bool LevelIOSaveOnline(LevelIO levelIO, Level level, char * host, char * userName, char * sessionID, char * levelName, int id);
-Level LevelIOLoadOnline(LevelIO levelIO, char * url, char * user, int id);
+bool LevelIOSave(LevelIO levelIO, Level level, char * file, char * levelName);
+Level LevelIOLoad(LevelIO levelIO, char * file);
 void LevelIODestroy(LevelIO levelIO);

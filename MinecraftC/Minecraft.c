@@ -81,10 +81,6 @@ void MinecraftShutdown(Minecraft minecraft)
 	       } catch (Exception var3) {
 		  ;
 	       }*/
-	if (!minecraft->LevelLoaded)
-	{
-		LevelIOSave(minecraft->LevelIO, minecraft->Level, SDL_RWFromFile("level.dat", "rb"));
-	}
 	
 	SDL_GL_DeleteContext(minecraft->Context);
 	SDL_DestroyWindow(minecraft->Window);
@@ -367,12 +363,6 @@ void MinecraftRun(Minecraft minecraft)
 	minecraft->Font = FontRendererCreate(minecraft->Settings, "Default.png", minecraft->TextureManager);
 	minecraft->LevelRenderer = LevelRendererCreate(minecraft, minecraft->TextureManager);
 	glViewport(0, 0, minecraft->FrameWidth, minecraft->FrameHeight);
-	
-	if (!minecraft->LevelLoaded)
-	{
-		Level level = LevelIOLoad(minecraft->LevelIO, SDL_RWFromFile("level.dat", "rb"));
-		if (level != NULL) { MinecraftSetLevel(minecraft, level); }
-	}
 	
 	if (minecraft->Level == NULL) { MinecraftGenerateLevel(minecraft, 1); }
 	minecraft->LevelLoaded = true;
@@ -962,17 +952,6 @@ void MinecraftGenerateLevel(Minecraft minecraft, int size)
 	Level level = LevelGeneratorGenerate(generator, user, 128 << size, 128 << size, 64);
 	MinecraftSetLevel(minecraft, level);
 	LevelGeneratorDestroy(generator);
-}
-
-bool MinecraftLoadOnlineLevel(Minecraft minecraft, char * username, int userID)
-{
-	Level level = LevelIOLoadOnline(minecraft->LevelIO, minecraft->Host, username, userID);
-	if (level == NULL) { return false; }
-	else
-	{
-		MinecraftSetLevel(minecraft, level);
-		return true;
-	}
 }
 
 void MinecraftSetLevel(Minecraft minecraft, Level level)

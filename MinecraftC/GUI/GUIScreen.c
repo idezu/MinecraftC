@@ -149,8 +149,6 @@ void GUIScreenTick(GUIScreen screen)
 {
 	if (screen->Type == GUIScreenTypeChatInput) { ChatInputScreenTick(screen); return; }
 	if (screen->Type == GUIScreenTypeLevelName) { LevelNameScreenTick(screen); return; }
-	if (screen->Type == GUIScreenTypeLoadLevel) { LoadLevelScreenTick(screen); return; }
-	if (screen->Type == GUIScreenTypeSaveLevel) { LoadLevelScreenTick(screen); return; }
 }
 
 void GUIScreenOnClose(GUIScreen screen)

@@ -15,25 +15,24 @@ SaveLevelScreen SaveLevelScreenCreate(GUIScreen parent)
 
 void SaveLevelScreenOnOpen(SaveLevelScreen screen)
 {
-	screen->Buttons[5]->Text = StringSet(screen->Buttons[5]->Text, "Save file...");
+	for (int i = 0; i < 5; i++) { screen->Buttons[i]->Active = true; }
+	screen->Buttons[5]->Text = StringSet(screen->Buttons[5]->Text, "Import level...");
 	screen->Buttons[5]->Active = false;
 }
 
-void SaveLevelScreenOpenLevel(SaveLevelScreen screen, int level)
+void SaveLevelScreenOpenLevel(SaveLevelScreen screen, int id)
 {
-	MinecraftSetCurrentScreen(screen->Minecraft, LevelNameScreenCreate(screen, screen->Buttons[level]->Text, level));
+	MinecraftSetCurrentScreen(screen->Minecraft, LevelNameScreenCreate(screen, screen->Buttons[id]->Text, id));
 }
 
-void SaveLevelScreenOpenLevelFromFile(SaveLevelScreen screen, char * file)
+void SaveLevelScreenPortLevel(SaveLevelScreen screen, char * file)
 {
-	LoadLevelScreenData this = screen->TypeData;
-	LevelIOSave(screen->Minecraft->LevelIO, screen->Minecraft->Level, SDL_RWFromFile(file, "wb"));
-	MinecraftSetCurrentScreen(screen->Minecraft, this->Parent);
+	//LoadLevelScreenData this = screen->TypeData;
 }
 
 void SaveLevelScreenRender(SaveLevelScreen screen, int2 mousePos)
 {
-	if (!screen->Minecraft->Session->HasPaid)
+	if ((false))
 	{
 		ScreenDrawFadingBox((int2){ screen->Width / 2 - 80, 72 }, (int2){ screen->Width / 2 + 80, 120 }, ColorFromHex(0x000000E0), ColorFromHex(0x000000E0));
 		ScreenDrawCenteredString(screen->Font, "Premium only!", (int2){ screen->Width / 2, 80 }, ColorFromHex(0xFF9090FF));
