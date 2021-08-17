@@ -9,24 +9,14 @@ SaveLevelScreen SaveLevelScreenCreate(GUIScreen parent)
 	screen->Type = GUIScreenTypeSaveLevel;
 	LoadLevelScreenData this = screen->TypeData;
 	this->Title = "Save level";
-	this->Saving = true;
 	this->Parent = parent;
 	return screen;
-}
-
-void SaveLevelScreenSetLevels(SaveLevelScreen screen, char * strings[5])
-{
-	for (int i = 0; i < 5; i++)
-	{
-		screen->Buttons[i]->Text = StringSet(screen->Buttons[i]->Text, strings[i]);
-		screen->Buttons[i]->Visible = true;
-		screen->Buttons[i]->Active = screen->Minecraft->Session->HasPaid;
-	}
 }
 
 void SaveLevelScreenOnOpen(SaveLevelScreen screen)
 {
 	screen->Buttons[5]->Text = StringSet(screen->Buttons[5]->Text, "Save file...");
+	screen->Buttons[5]->Active = false;
 }
 
 void SaveLevelScreenOpenLevel(SaveLevelScreen screen, int level)

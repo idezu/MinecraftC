@@ -12,42 +12,20 @@ LoadLevelScreen LoadLevelScreenCreate(GUIScreen parent)
 	LoadLevelScreenData this = screen->TypeData;
 	this->Parent = parent;
 	this->Title = "Load level";
-	this->Status = "";
-	this->Finished = false;
-	this->Loaded = false;
-	this->Frozen = false;
-	this->Saving = false;
 	return screen;
-}
-
-void LoadLevelScreenRun(LoadLevelScreen screen)
-{
-	LoadLevelScreenData this = screen->TypeData;
-	this->Status = "Failed to load levels";
-	this->Finished = true;
-}
-
-void LoadLevelScreenSetLevels(LoadLevelScreen screen, char * levels[5])
-{
-	if (screen->Type == GUIScreenTypeSaveLevel) { SaveLevelScreenSetLevels(screen, levels); return; }
-	for (int i = 0; i < 5; i++)
-	{
-		screen->Buttons[i]->Active = !(strcmp(levels[i], "-") == 0);
-		screen->Buttons[i]->Text = StringSet(screen->Buttons[i]->Text, levels[i]);
-		screen->Buttons[i]->Visible = true;
-	}
 }
 
 void LoadLevelScreenOnOpen(LoadLevelScreen screen)
 {
-	LoadLevelScreenRun(screen);
 	for (int i = 0; i < 5; i++)
 	{
-		screen->Buttons = ListPush(screen->Buttons, &(Button){ ButtonCreate(i, screen->Width / 2 - 100, screen->Height / 6 + i * 24, "---") });
-		screen->Buttons[i]->Visible = false;
+		String name = StringConcatFront("Level", StringCreateFromInt(i));
+		screen->Buttons = ListPush(screen->Buttons, &(Button){ ButtonCreate(i, screen->Width / 2 - 100, screen->Height / 6 + i * 24, name) });
+		StringDestroy(name);
 		screen->Buttons[i]->Active = false;
 	}
 	screen->Buttons = ListPush(screen->Buttons, &(Button){ ButtonCreate(5, screen->Width / 2 - 100, screen->Height / 6 + 132, "Load file...") });
+	screen->Buttons[5]->Active = false;
 	screen->Buttons = ListPush(screen->Buttons, &(Button){ ButtonCreate(6, screen->Width / 2 - 100, screen->Height / 6 + 168, "Cancel") });
 	if (screen->Type == GUIScreenTypeSaveLevel) { SaveLevelScreenOnOpen(screen); return; }
 }
@@ -55,21 +33,16 @@ void LoadLevelScreenOnOpen(LoadLevelScreen screen)
 void LoadLevelScreenOnButtonClicked(LoadLevelScreen screen, Button button)
 {
 	LoadLevelScreenData this = screen->TypeData;
-	if (!this->Frozen && button->Active)
+	if (button->Active)
 	{
-		if (this->Loaded && button->ID < 5) { LoadLevelScreenOpenLevel(screen, button->ID); }
+		if (button->ID < 5) { LoadLevelScreenOpenLevel(screen, button->ID); }
 		
-		if (this->Finished || (this->Loaded && button->ID == 5))
+		if (button->ID == 5)
 		{
-			this->Frozen = true;
-			/*
-			 LevelDialog var2;
-			 (var2 = new LevelDialog(this)).setDaemon(true);
-			 SwingUtilities.invokeLater(var2);
-			 */
+			
 		}
 		
-		if (this->Finished || (this->Loaded && button->ID == 6))
+		if (button->ID == 6)
 		{
 			MinecraftSetCurrentScreen(screen->Minecraft, this->Parent);
 		}
@@ -106,11 +79,11 @@ void LoadLevelScreenOnClose(LoadLevelScreen screen)
 void LoadLevelScreenTick(LoadLevelScreen screen)
 {
 	LoadLevelScreenData this = screen->TypeData;
-	if (this->SelectedFile != NULL)
+	/*if (this->SelectedFile != NULL)
 	{
 		LoadLevelScreenOpenLevelFromFile(screen, this->SelectedFile);
 		this->SelectedFile = NULL;
-	}
+	}*/
 }
 
 void LoadLevelScreenRender(LoadLevelScreen screen, int2 mousePos)
@@ -118,14 +91,9 @@ void LoadLevelScreenRender(LoadLevelScreen screen, int2 mousePos)
 	LoadLevelScreenData this = screen->TypeData;
 	ScreenDrawFadingBox((int2){ 0, 0 }, (int2){ screen->Width, screen->Height }, ColorFromHex(0x05050060), ColorFromHex(0x303060A0));
 	ScreenDrawCenteredString(screen->Font, this->Title, (int2){ screen->Width / 2, 20 }, ColorWhite);
-	if (this->Frozen) { ScreenDrawCenteredString(screen->Font, "Selecting file..", (int2){ screen->Width / 2, screen->Height / 2 - 4 }, ColorWhite); }
-	else
-	{
-		if (!this->Loaded) { ScreenDrawCenteredString(screen->Font, this->Status, (int2){ screen->Width / 2, screen->Height / 2 - 4 }, ColorWhite); }
-		screen->Type = GUIScreenTypeNone;
-		GUIScreenRender(screen, mousePos);
-		screen->Type = GUIScreenTypeLoadLevel;
-	}
+	screen->Type = GUIScreenTypeNone;
+	GUIScreenRender(screen, mousePos);
+	screen->Type = GUIScreenTypeLoadLevel;
 	if (screen->Type == GUIScreenTypeSaveLevel) { SaveLevelScreenRender(screen, mousePos); return; }
 }
 

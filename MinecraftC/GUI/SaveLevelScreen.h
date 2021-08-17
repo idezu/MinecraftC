@@ -4,7 +4,6 @@
 typedef LoadLevelScreen SaveLevelScreen;
 
 SaveLevelScreen SaveLevelScreenCreate(GUIScreen parent);
-void SaveLevelScreenSetLevels(SaveLevelScreen screen, char * strings[5]);
 void SaveLevelScreenOnOpen(SaveLevelScreen screen);
 void SaveLevelScreenOpenLevel(SaveLevelScreen screen, int level);
 void SaveLevelScreenOpenLevelFromFile(SaveLevelScreen screen, char * file);
