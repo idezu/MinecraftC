@@ -24,7 +24,7 @@ void LoadLevelScreenOnOpen(LoadLevelScreen screen)
 	{
 		screen->Buttons = ListPush(screen->Buttons, &(Button){ ButtonCreate(i, screen->Width / 2 - 100, screen->Height / 6 + i * 24, "---") });
 		
-		String filePath = StringConcatFront(screen->Minecraft->WorkingDirectory, StringConcat(StringConcatFront("Saves/Level", StringCreateFromInt(i)), ".dat"));
+		String filePath = StringConcatFront(screen->Minecraft->WorkingDirectory, StringConcat(StringConcatFront("Level", StringCreateFromInt(i)), ".dat"));
 		SDL_RWops * file = SDL_RWFromFile(filePath, "rb");
 		if (file != NULL)
 		{
@@ -62,7 +62,7 @@ void LoadLevelScreenOnButtonClicked(LoadLevelScreen screen, Button button)
 void LoadLevelScreenOpenLevel(LoadLevelScreen screen, int id)
 {
 	if (screen->Type == GUIScreenTypeSaveLevel) { SaveLevelScreenOpenLevel(screen, id); return; }
-	String filePath = StringConcatFront(screen->Minecraft->WorkingDirectory, StringConcat(StringConcatFront("Saves/Level", StringCreateFromInt(id)), ".dat"));
+	String filePath = StringConcatFront(screen->Minecraft->WorkingDirectory, StringConcat(StringConcatFront("Level", StringCreateFromInt(id)), ".dat"));
 	MinecraftSetLevel(screen->Minecraft, LevelIOLoad(screen->Minecraft->LevelIO, filePath));
 	StringDestroy(filePath);
 	MinecraftSetCurrentScreen(screen->Minecraft, NULL);

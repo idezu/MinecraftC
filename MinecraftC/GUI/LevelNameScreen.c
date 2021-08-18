@@ -73,7 +73,7 @@ void LevelNameScreenOnButtonClicked(LevelNameScreen screen, Button button)
 	{
 		if (button->ID == 0 && StringLength(this->Name) > 0)
 		{
-			String filePath = StringConcatFront(screen->Minecraft->WorkingDirectory, StringConcat(StringConcatFront("Saves/Level", StringCreateFromInt(this->ID)), ".dat"));
+			String filePath = StringConcatFront(screen->Minecraft->WorkingDirectory, StringConcat(StringConcatFront("Level", StringCreateFromInt(this->ID)), ".dat"));
 			LevelIOSave(screen->Minecraft->LevelIO, screen->Minecraft->Level, filePath, this->Name);
 			StringDestroy(filePath);
 			MinecraftSetCurrentScreen(screen->Minecraft, NULL);
